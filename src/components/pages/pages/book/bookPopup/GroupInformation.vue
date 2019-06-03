@@ -28,7 +28,11 @@
 
             <BooleanSwitch name="isElectronic" label="Livre électronique"></BooleanSwitch>
 
-            <!--            <Files name="electronicBook" label="Livre"></Files>-->
+            <Select name="owner" label="Propriétaire" :options-source="userListPromise" :value="cOwner"
+                    v-on:select-changed="setOwner"></Select>
+
+            <Files name="electronicBook" label="Livre" :max-files="Number(1)" :on-file-added="setElectronicBook"
+                   :on-file-removed="removeElectronicBook" :files="cElectronicFile"></Files>
 
         </template>
     </Group>
@@ -39,11 +43,13 @@
     import InputText from "../../../../form/elements/InputText";
     import Entities from "../../../../form/elements/Entities";
     import BooleanSwitch from "../../../../form/elements/BooleanSwitch";
-    import Files, {FileObject} from "../../../../form/elements/Files";
+    import Files from "../../../../form/elements/Files";
+    import Xhr from "../../../../../assets/js/xhr";
 
     import store from "../../../../../assets/js/store";
     import BookModule from "../../../../../assets/js/store/book";
     import AuthorModule from "../../../../../assets/js/store/author";
+    import Select from "../../../../form/elements/Select";
 
     if (!store.state['book']) {
         store.registerModule('book', BookModule);
@@ -55,7 +61,22 @@
 
     export default {
         name: "GroupInformation",
-        components: {BooleanSwitch, Entities, InputText, Group, Files},
+        components: {Select, BooleanSwitch, Entities, InputText, Group, Files},
+        data() {
+            return {
+                userListPromise: Xhr.buildGetUrl('/api/users')
+                    .then(url => {
+                        return Xhr.fetch(url, {});
+                    })
+                    .then(response => {
+                        let users = {};
+                        response['hydra:member'].forEach(user => {
+                            users[user.id] = user.username;
+                        });
+                        return Promise.resolve(users);
+                    })
+            }
+        },
         methods: {
             propertyChanged(field, value) {
                 this.$store.commit('setProperty', {
@@ -85,6 +106,18 @@
                         this.$refs.authorFirstname.clear();
                         this.$refs.authorLastname.clear();
                     });
+            },
+            setElectronicBook(file) {
+                this.$store.commit('setProperty', {
+                    propertyName: 'electronicBook',
+                    value: file
+                });
+            },
+            removeElectronicBook() {
+                this.$store.commit('deleteRelatedEbook');
+            },
+            setOwner(userId) {
+                this.$store.commit('setOwner', userId);
             }
         },
         computed: {
@@ -103,12 +136,21 @@
             cAuthors() {
                 return this.$store.getters.getProperty('authors')
             },
-            cFiles() {
-                // let file = this.$store.getters.getters('electronicBook');
-                // return [
-                //     new FileObject(file.)
-                // ]
-                return '';
+            cElectronicFile() {
+                let filesArray = [];
+                let file = this.$store.getters.getProperty('electronicBook');
+                if (file) {
+                    filesArray.push(file);
+                }
+                return filesArray;
+            },
+            cOwner() {
+                let owner = this.$store.getters.getProperty('owner');
+
+                if (typeof owner === 'object' && typeof owner.id !== 'undefined') {
+                    return owner.id;
+                }
+                return null;
             }
         },
         store

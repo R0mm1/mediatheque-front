@@ -49,6 +49,9 @@
             value(newValue) {
                 this.elValue = newValue;
             }
+        },
+        created() {
+            this.elValue = this.value;
         }
     }
 </script>

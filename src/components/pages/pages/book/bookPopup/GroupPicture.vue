@@ -4,16 +4,18 @@
             Couverture
         </template>
         <template v-slot:group_content>
-            <InputPicture :name="'picture'" v-on:picture-changed="pictureChanged"></InputPicture>
+            <InputPicture name="picture" :src="src" v-on:picture-changed="pictureChanged"></InputPicture>
         </template>
     </Group>
 </template>
 
 <script>
+    import Xhr from "../../../../../assets/js/xhr";
     import Group from "../../../../popup/Group";
     import InputPicture from "../../../../form/elements/InputPicture";
 
     import store from "../../../../../assets/js/store";
+    import {mapState} from 'vuex';
     import BookModule from "../../../../../assets/js/store/book";
 
     if (!store.state['book']) {
@@ -23,11 +25,31 @@
     export default {
         name: "GroupPicture",
         components: {InputPicture, Group},
+        data() {
+            return {
+                src: ''
+            }
+        },
         methods: {
             pictureChanged(newFile) {
                 this.$store.dispatch('setCover', {
                     file: newFile
                 });
+            }
+        },
+        computed: mapState({
+            cover: state => {
+                return state.book.book.cover ? state.book.book.cover : ''
+            }
+        }),
+        watch: {
+            cover(cover) {
+                if (cover.length === 0) return;
+
+                Xhr.buildGetUrl(cover)
+                    .then(url => {
+                        this.src = url;
+                    });
             }
         },
         store

@@ -8,6 +8,7 @@ Vue.use(VueRouter);
 Vue.use(Vuex);
 
 const router = new VueRouter({
+    mode: 'history',
     routes: [
         {path: '/login', component: () => import('./components/pages/pages/Login')},
         {path: '/book', component: () => import('./components/pages/pages/Book')}

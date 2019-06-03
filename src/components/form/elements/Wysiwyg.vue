@@ -39,6 +39,9 @@
                 this.editorData = newValue;
             }
         },
+        created() {
+            this.editorData = this.content;
+        }
     }
 </script>
 

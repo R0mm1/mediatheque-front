@@ -4,7 +4,8 @@
         <template v-slot:element_label><span></span></template>
 
         <template v-slot:element_content>
-            <div class="picture_preview" v-on:click="displayFileChooser" :style="'background-image: url('+src+')'">
+            <div class="picture_preview" v-on:click="displayFileChooser"
+                 :style="'background-image: url('+pictureSrc+')'">
                 <Loader class="loader" v-if="isPictureLoading" :type="'s'"></Loader>
                 <div class="preview_default" v-if="displayDefault && !isPictureLoading">
                     <i class="far fa-image"></i>
@@ -32,11 +33,13 @@
         name: "InputPicture",
         components: {Loader, InputButton, FormElement},
         props: {
-            name: {default: ''}
+            name: {type: String, default: ''},
+            src: {type: String, required: true},
+            autofillSrcOnChange: {Boolean, default: false}
         },
         data() {
             return {
-                src: '',
+                pictureSrc: '',
                 displayDefault: true,
                 isPictureLoading: false
             }
@@ -50,21 +53,31 @@
 
                 let file = e.target.files[0];
 
-                this.displayDefault=false;
-                this.src = URL.createObjectURL(file);
+                this.displayDefault = false;
+
+                if (this.autofillSrcOnChange) {
+                    this.pictureSrc = URL.createObjectURL(file);
+                }
 
                 this.$emit('picture-changed', file);
 
                 this.isPictureLoading = false;
             },
             clear() {
-                this.src = '';
                 this.displayDefault = true;
             },
-            load(url) {
-                this.src = (typeof url != 'string') ? '' : url;
-                this.displayDefault = (this.src.length === 0);
+            setSrc(newSrc) {
+                this.pictureSrc = newSrc;
+                this.displayDefault = (newSrc.length === 0);
             }
+        },
+        watch: {
+            src(newSrc) {
+                this.setSrc(newSrc);
+            }
+        },
+        created() {
+            this.setSrc(this.src);
         }
     }
 </script>

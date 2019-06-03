@@ -46,15 +46,10 @@
         },
         methods: {
             dataChanged(name, value) {
-                console.log('dataChanged method from book module');
                 this.$store.commit('setProperty', {propertyName: name, value: value});
             },
             save() {
-                console.log('save method');
                 this.$store.dispatch('saveBook')
-                    .then(data => {
-                        console.log(data);
-                    })
                     .catch(error => {
                         console.error(error);
                         alert("Une erreur s'est produite et le livre n'a pas pu être sauvegardé");
