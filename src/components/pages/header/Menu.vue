@@ -12,22 +12,26 @@
 </template>
 
 <script>
-    import Xhr from './../../../assets/js/xhr';
-
     export default {
         name: "Menu",
         data: function () {
             return {
-                'menu': {}
+                menu: [
+                    {
+                        label: 'Livres',
+                        children: [
+                            {
+                                label: 'Par livre',
+                                target: '/book'
+                            },
+                            {
+                                label: 'Par auteur',
+                                target: '/author'
+                            }
+                        ]
+                    }
+                ]
             }
-        },
-        created() {
-            Xhr.fetch('/api/user/menu', {
-                method: 'GET'
-            })
-                .then(response => {
-                    this.menu = response;
-                });
         }
     }
 </script>

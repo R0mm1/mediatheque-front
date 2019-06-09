@@ -1,16 +1,16 @@
 <template>
-    <Page :no-user="true" :custom-header-message="'Bienvenue!'">
+    <Page :no-user="true" custom-header-message="Bienvenue!">
 
         <template v-slot:med_page_body>
 
-            <FormContainer :validate-label="'Se connecter'" :validate-action="login">
+            <FormContainer validate-label="Se connecter" :validate-action="login">
                 <template v-slot:form_title>
                     Se connecter
                 </template>
 
                 <template v-slot:form_body>
-                    <InputText ref="login" :label="'Identifiant'"></InputText>
-                    <InputPassword ref="password" :label="'Mot de passe'"></InputPassword>
+                    <InputText ref="login" label="Identifiant"></InputText>
+                    <InputPassword ref="password" label="Mot de passe"></InputPassword>
                 </template>
 
                 <template v-slot:action_cancel>
@@ -35,7 +35,7 @@
         name: "Login",
         components: {InputText, InputPassword, FormContainer, Page},
         methods: {
-            login(formData) {
+            login() {
                 Xhr.login(this.$refs.login.getValue(), this.$refs.password.getValue());
             }
         }
