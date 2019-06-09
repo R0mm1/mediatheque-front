@@ -1,6 +1,6 @@
 import Xhr from '../xhr';
 
-const BookModule = {
+const AuthorModule = {
     namespaced: true,
     state() {
         return {
@@ -68,4 +68,4 @@ const BookModule = {
     },
 };
 
-export default BookModule;
+export default AuthorModule;

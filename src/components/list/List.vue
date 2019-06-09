@@ -41,7 +41,9 @@
                 default: () => ({})
             },
             cols: {},
-            colsProperties: {},
+            colsProperties: {
+                default: () => ({})
+            },
             apiEndpoint: {},
             rowActions: {
                 default: () => ([])

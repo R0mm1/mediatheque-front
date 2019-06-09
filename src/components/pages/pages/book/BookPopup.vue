@@ -1,7 +1,7 @@
 <template>
     <Popup id="bookPopup">
         <template v-slot:popup_header>
-            <InputText :placeholder="'Titre'" :name="'title'" :value="title" :custom-classes="'input_title'"
+            <InputText placeholder="Titre" name="title" :value="title" custom-classes="input_title"
                        :no-label="true" v-on:input-text-changed="dataChanged"></InputText>
             <InputButton v-on:click.native="$emit('popup-wanna-close')"
                          :label-custom-classes="'fas fa-times'" :custom-classes="['button_close']"></InputButton>
@@ -17,7 +17,7 @@
         </template>
 
         <template v-slot:popup_footer>
-            <InputButton :name="'save'" :value="'Enregistrer'" :type="'submit'" v-on:click.native="save"
+            <InputButton name="save" value="Enregistrer" type="submit" v-on:click.native="save"
                          v-if="isModified"></InputButton>
         </template>
 
@@ -106,7 +106,7 @@
 
         .button_close {
             width: 4rem;
-            margin: 0px;
+            margin: 0;
             display: flex;
             flex-direction: column;
             text-align: center;
