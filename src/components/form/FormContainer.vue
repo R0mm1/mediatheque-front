@@ -15,6 +15,8 @@
                     </slot>
                 </div>
 
+                <div class="action_separator"></div>
+
                 <div class="action_validate">
                     <slot name="action_validate">
                         <InputButton v-on:click.native="validate" :value="validateLabel" :type="'submit'"></InputButton>
@@ -66,7 +68,7 @@
     .body_actions {
         display: flex;
 
-        .action_cancel {
+        .action_separator {
             flex: 1;
         }
     }

@@ -39,6 +39,9 @@
             width: 25%;
             max-width: 250px;
             margin-left: 2px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         .element_content {

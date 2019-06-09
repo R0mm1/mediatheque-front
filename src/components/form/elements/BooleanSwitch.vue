@@ -34,6 +34,11 @@
                 this.$emit('boolean-switch-state-changed', this.name, this.enabled);
             }
         },
+        watch: {
+            value(newVal) {
+                this.enabled = newVal;
+            }
+        },
         mounted() {
             this.enabled = this.value;
         }
@@ -42,6 +47,16 @@
 
 <style scoped lang="scss">
     @import "../../../assets/scss/colors";
+
+    .form_element_boolean_switch {
+        line-height: 2rem;
+    }
+
+    .switch_container {
+        height: 2rem;
+        vertical-align: middle;
+        display: table-cell;
+    }
 
     .switch_indicator_container {
         height: 21px;

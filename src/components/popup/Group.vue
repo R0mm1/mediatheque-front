@@ -23,6 +23,8 @@
 </script>
 
 <style scoped lang="scss">
+    $headerHeight: 1.7rem;
+
     .med_popup_group {
         margin: 10px;
         display: flex;
@@ -30,8 +32,6 @@
     }
 
     .group_header {
-        $headerHeight: 1.7rem;
-
         display: flex;
         height: $headerHeight;
         margin-bottom: 7px;
@@ -45,7 +45,6 @@
             height: 1.7rem;
             margin: 0;
             padding: 0;
-            line-height: $headerHeight;
             width: $headerHeight;
             text-align: center;
         }
@@ -58,9 +57,19 @@
         font-size: 1.2rem;
         font-weight: 500;
     }
-    
-    .group_content{
+
+    .group_content {
         position: relative;
         flex: 1;
+    }
+</style>
+
+<style lang="scss">
+    $headerHeight: 1.7rem;
+
+    .med_popup_group {
+        .group_header .group_customActions .form_element_button label {
+            line-height: $headerHeight;
+        }
     }
 </style>

@@ -3,17 +3,12 @@
 
         <template v-slot:element_content>
 
-            <div v-for="file in files" :key="file.id" class="file_row">
-                <div class="name">{{file.name}}</div>
-                <InputButton name="delete" label-custom-classes="fas fa-trash-alt"
-                             v-if="typeof onFileRemoved === 'function'"
-                             v-on:click.native="onFileRemoved(file.id)"></InputButton>
-                <InputButton name="download" label-custom-classes="fas fa-file-download"
-                             v-on:click.native="downloadFile(file.id)" v-if="cIsDownloadEnabled"></InputButton>
-            </div>
+            <SimpleList :elements="cListElements" :actions="cListRowActions"></SimpleList>
 
-            <InputButton v-if="!isFileLoading" name="add" value="Ajouter" :disabled="cMaxFilesReached"
-                         v-on:click.native="displayFileChooser"></InputButton>
+            <div class="files_buttons">
+                <InputButton v-if="!isFileLoading" name="add" value="Ajouter" :disabled="cMaxFilesReached"
+                             v-on:click.native="displayFileChooser"></InputButton>
+            </div>
 
             <Loader class="loader" v-if="isFileLoading" type="s"></Loader>
 
@@ -29,10 +24,11 @@
     import InputButton from "./InputButton";
     import Loader from "../../widgets/Loader";
     import MedFile from "../../../assets/js/medFile";
+    import SimpleList, {Element, Action} from "../../widgets/SimpleList";
 
     export default {
         name: "Files",
-        components: {Loader, InputButton, FormElement},
+        components: {SimpleList, Loader, InputButton, FormElement},
         props: {
             label: {default: '', type: String},
             name: {default: '', type: String},
@@ -44,7 +40,10 @@
         },
         data() {
             return {
-                isFileLoading: false
+                isFileLoading: false,
+                listRowActions: [
+                    new Action('fas fa-trash-alt', this.onFileRemoved)
+                ]
             }
         },
         methods: {
@@ -76,11 +75,44 @@
                     return false;
                 }
                 return Object.keys(this.files).length >= this.maxFiles;
+            },
+            cListElements() {
+                return this.files.map(medFile => {
+                    return new Element(medFile.id, medFile.name);
+                });
+            },
+            cListRowActions() {
+                let actions = [];
+                if (typeof this.onFileRemoved === 'function') {
+                    actions.push(new Action('fas fa-trash-alt', this.onFileRemoved));
+                }
+                if (this.cIsDownloadEnabled) {
+                    actions.push(new Action('fas fa-file-download', this.downloadFile));
+                }
+                return actions;
             }
         }
     }
 </script>
 
 <style scoped>
+    input[type='file'] {
+        display: none;
+    }
 
+    .files_buttons .form_element_button {
+        float: right;
+    }
+</style>
+
+<style lang="scss">
+    .form_element_files {
+        > .element_label {
+            line-height: 2rem;
+        }
+
+        .element_content {
+            margin-top: 5px;
+        }
+    }
 </style>

@@ -1,5 +1,6 @@
 <template>
-    <FormElement :label="label" :name="name" container-custom-classes="form_element_entities">
+    <FormElement :label="label" :name="name" container-custom-classes="form_element_entities"
+                 label-custom-classes="entities_label">
 
         <template v-slot:element_content>
             <div v-for="(entity, index) in entities" :key="entity.id" class="entity">
@@ -12,6 +13,8 @@
                     <InputText name="searchValue" :no-label="true" :placeholder="searchFieldPlaceholder"
                                v-on:input-text-keyup="searchEntity"></InputText>
                     <InputButton name="searchCreate" label-custom-classes="fas fa-plus"
+                                 :custom-classes="['btnSearchCreate']"
+                                 v-if="isCreationAvailable"
                                  v-on:click.native="isFormCreationDisplayed = true"></InputButton>
                 </div>
 
@@ -114,8 +117,7 @@
                             });
                             this.isProposalsDisplayed = true;
                         })
-                        .catch(error => {
-                            console.error(error);
+                        .catch(() => {
                             alert('Une erreur est survenue');
                         });
                 }
@@ -141,6 +143,11 @@
 <style lang="scss">
 
     @import "../../../assets/scss/colors";
+
+
+    .entities_label {
+        line-height: 2rem;
+    }
 
     .entity {
         display: inline-flex;
@@ -182,6 +189,16 @@
 
         .search_inputs {
             display: flex;
+
+            .btnSearchCreate {
+                height: calc(2rem - 5px);
+                padding: 0 4px;
+                margin: 5px 0 0 0;
+
+                label {
+                    line-height: calc(2rem - 5px);
+                }
+            }
         }
 
         .search_results {
