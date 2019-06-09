@@ -9,7 +9,8 @@ const BookModule = {
                 authors: []
             },
             flags: {
-                isModified: false
+                isModified: false,
+                isElectronic: false
             },
             eBookToDelete: null
         }
@@ -36,7 +37,7 @@ const BookModule = {
 
             promise.then(() => {
                 Vue.set(state, 'book', book);
-                // state.book = book;
+                Vue.set(state.flags, 'isElectronic', book.electronicBook instanceof MedFile);
             });
 
         },
@@ -46,6 +47,9 @@ const BookModule = {
 
             Vue.set(state.book, propertyName, value);
             state.flags.isModified = true;
+        },
+        setFlag(state, {flagName, value}) {
+            Vue.set(state.flags, flagName, value);
         },
         addAuthor(state, author) {
             let authorAtIndex = this.getters.hasAuthor(author['@id']);
@@ -79,7 +83,7 @@ const BookModule = {
             return '';
         },
         getFlag: (state) => (flagName) => {
-            if (state.flags[flagName]) {
+            if (typeof state.flags[flagName] !== 'undefined') {
                 return state.flags[flagName];
             }
             return null;
@@ -128,6 +132,10 @@ const BookModule = {
             let url = '/api/books' + (method === 'PUT' ? '/' + bookId : '');
             let promise = Promise.resolve();
 
+            if (context.getters.getFlag('isElectronic') === false) {
+                context.commit('deleteRelatedEbook');
+            }
+
             //Create new ebook, if needed
             let electronicBook = context.state.book.electronicBook;
             if (electronicBook instanceof MedFile && electronicBook.isNew) {
@@ -140,7 +148,7 @@ const BookModule = {
                     })
                     .then(electronicBookData => {
                         return new Promise((resolve => {
-                            electronicBook.id = electronicBookData['@id'];
+                            electronicBook.id = electronicBookData['id'];
                             resolve(context.commit('setProperty', {
                                 propertyName: 'electronicBook',
                                 value: electronicBook
@@ -196,6 +204,28 @@ const BookModule = {
                         method: 'DELETE'
                     });
                 });
+        },
+        downloadEbook(context) {
+            let file = context.state.book.electronicBook;
+            if (file instanceof MedFile) {
+                Xhr.buildGetUrl('/api/electronic_books/' + file.id)
+                    .then(url => {
+                        return Xhr.fetch(url, {
+                            method: 'GET'
+                        });
+                    })
+                    .then(response => new Response(response.body))
+                    .then(response => response.blob())
+                    .then(blob => URL.createObjectURL(blob))
+                    .then(url => {
+                        let a = document.createElement('a');
+                        a.href = url;
+                        a.download = file.name;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    });
+            }
         }
     },
 };

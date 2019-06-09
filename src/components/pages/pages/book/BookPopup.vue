@@ -8,9 +8,12 @@
         </template>
 
         <template v-slot:popup_body>
-            <GroupPicture></GroupPicture>
-            <GroupSummary></GroupSummary>
-            <GroupInformation></GroupInformation>
+            <GroupPicture class="groupPicture"></GroupPicture>
+            <div class="bookPopupColumn">
+                <GroupSummary class="groupSummary"></GroupSummary>
+                <GroupReferences></GroupReferences>
+            </div>
+            <GroupInformation class="groupInformation"></GroupInformation>
         </template>
 
         <template v-slot:popup_footer>
@@ -29,6 +32,7 @@
     import GroupInformation from "./bookPopup/GroupInformation";
     import GroupPicture from "./bookPopup/GroupPicture";
     import GroupSummary from "./bookPopup/GroupSummary";
+    import GroupReferences from "./bookPopup/GroupReferences";
 
     import {mapActions} from 'vuex';
     import store from '../../../../assets/js/store';
@@ -40,7 +44,7 @@
 
     export default {
         name: "BookPopup",
-        components: {GroupSummary, GroupPicture, GroupInformation, InputButton, InputText, Popup},
+        components: {GroupReferences, GroupSummary, GroupPicture, GroupInformation, InputButton, InputText, Popup},
         props: {
             bookId: {default: null}
         },
@@ -111,6 +115,24 @@
             label {
                 font-size: 2rem;
             }
+        }
+
+        .groupPicture {
+            width: 10%;
+            min-width: 150px;
+        }
+
+        .groupSummary {
+            height: 50%;
+        }
+
+        .groupInformation {
+            min-width: 450px;
+            width: 50%;
+        }
+
+        .bookPopupColumn{
+            flex: 1;
         }
     }
 </style>

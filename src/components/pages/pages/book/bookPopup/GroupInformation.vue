@@ -26,13 +26,15 @@
             <InputText name="isbn" label="Isbn" :value="cIsbn"
                        v-on:input-text-changed="propertyChanged"></InputText>
 
-            <BooleanSwitch name="isElectronic" label="Livre électronique"></BooleanSwitch>
+            <BooleanSwitch name="isElectronic" label="Livre électronique" :value="cIsElectronic"
+                           v-on:boolean-switch-state-changed="setBookType"></BooleanSwitch>
 
-            <Select name="owner" label="Propriétaire" :options-source="userListPromise" :value="cOwner"
-                    v-on:select-changed="setOwner"></Select>
+            <Select name="owner" label="Propriétaire" :options-source="getUserListPromise" :value="cOwner"
+                    v-if="!cIsElectronic" v-on:select-changed="setOwner"></Select>
 
             <Files name="electronicBook" label="Livre" :max-files="Number(1)" :on-file-added="setElectronicBook"
-                   :on-file-removed="removeElectronicBook" :files="cElectronicFile"></Files>
+                   :on-file-removed="removeElectronicBook" :files="cElectronicFile" :download-action="downloadEbook"
+                   v-if="cIsElectronic"></Files>
 
         </template>
     </Group>
@@ -62,21 +64,6 @@
     export default {
         name: "GroupInformation",
         components: {Select, BooleanSwitch, Entities, InputText, Group, Files},
-        data() {
-            return {
-                userListPromise: Xhr.buildGetUrl('/api/users')
-                    .then(url => {
-                        return Xhr.fetch(url, {});
-                    })
-                    .then(response => {
-                        let users = {};
-                        response['hydra:member'].forEach(user => {
-                            users[user.id] = user.username;
-                        });
-                        return Promise.resolve(users);
-                    })
-            }
-        },
         methods: {
             propertyChanged(field, value) {
                 this.$store.commit('setProperty', {
@@ -118,6 +105,28 @@
             },
             setOwner(userId) {
                 this.$store.commit('setOwner', userId);
+            },
+            getUserListPromise() {
+                return Xhr.buildGetUrl('/api/users')
+                    .then(url => {
+                        return Xhr.fetch(url, {});
+                    })
+                    .then(response => {
+                        let users = {};
+                        response['hydra:member'].forEach(user => {
+                            users[user.id] = user.username;
+                        });
+                        return Promise.resolve(users);
+                    })
+            },
+            setBookType(field, isElectronic) {
+                this.$store.commit('setFlag', {
+                    flagName: 'isElectronic',
+                    value: isElectronic
+                });
+            },
+            downloadEbook() {
+                this.$store.dispatch('downloadEbook');
             }
         },
         computed: {
@@ -135,6 +144,9 @@
             },
             cAuthors() {
                 return this.$store.getters.getProperty('authors')
+            },
+            cIsElectronic() {
+                return this.$store.getters.getFlag('isElectronic');
             },
             cElectronicFile() {
                 let filesArray = [];
