@@ -1,10 +1,10 @@
 {
   "api": {
-    "endpoint": "localhost:9000"
+    "endpoint": "###ENDPOINT###"
   },
   "auth": {
-    "client_id": "2_xo7ws812btw4w84cg0wo880wwokcwkwccgcwwcooos4gokw4w",
-    "client_secret": "5mjim6dcrrocko0cwoog80ko0sw4co4gossgscoo00sk0ooo0g"
+    "client_id": "###CLIENTID###",
+    "client_secret": "###CLIENTSECRET###"
   },
   "default": {
     "page": "\/book"
