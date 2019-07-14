@@ -11,6 +11,7 @@ const router = new VueRouter({
     mode: 'history',
     routes: [
         {path: '/login', component: () => import('./components/pages/pages/Login')},
+        {path: '/account', component: () => import('./components/pages/pages/Account')},
         {path: '/book', component: () => import('./components/pages/pages/Book')},
         {path: '/author', component: () => import('./components/pages/pages/Author')}
     ]

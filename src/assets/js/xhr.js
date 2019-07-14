@@ -85,7 +85,7 @@ const Xhr = {
             .then(response => response.json())
             .then(response => {
                 this.storeTokenData(response.access_token, response.refresh_token, response.expires_in);
-                window.location = config.default.page;
+                window.location = config.default.page
             })
             .catch(error => {
                 console.error(error);
@@ -131,7 +131,7 @@ const Xhr = {
         });
     },
 
-    sendFile(file, endpoint){
+    sendFile(file, endpoint) {
         let formData = new FormData();
         formData.append('file', file);
         return this.fetch(endpoint, {
