@@ -10,7 +10,7 @@
         </template>
 
         <template v-slot:group_content>
-            <Accordion :blocs="blocs">
+            <Accordion v-if="!groupFormDisplayed" :blocs="blocs">
                 <SimpleList v-for="bloc in blocs" :slot="bloc.slotId" :key="bloc.slotId"
                             :elements="blocsRows[bloc.slotId]"></SimpleList>
             </Accordion>
@@ -195,16 +195,3 @@
         store
     }
 </script>
-
-<style scoped lang="scss">
-    @import "../../../../../assets/scss/colors";
-
-    .group_manage {
-        position: absolute;
-        background-color: white;
-        box-shadow: 1px 1px 5px $shade1;
-        padding: 2px;
-        width: 100%;
-        top: 0;
-    }
-</style>

@@ -55,35 +55,12 @@
                 flex-direction: column;
             }
 
-            .ck.ck-toolbar {
-                margin-top: -40px;
-                opacity: 0;
-                visibility: hidden;
-                transition: all .3s;
-            }
-
             .ck.ck-editor__main {
                 flex: 1;
             }
 
             .ck.ck-content {
                 height: 100%;
-            }
-        }
-
-        .group_name {
-            opacity: 1;
-            transition: all .3s;
-        }
-
-        &:hover {
-            #wysiwygSummary .ck.ck-toolbar {
-                opacity: 1;
-                visibility: visible;
-            }
-
-            .group_name {
-                opacity: 0;
             }
         }
     }

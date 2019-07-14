@@ -1,5 +1,5 @@
 <template>
-    <div id="med_page">
+    <div id="med_page" :class="cClass">
 
         <div id="med_page_header">
             <slot name="med_page_header">
@@ -22,11 +22,26 @@
     export default {
         name: "Page",
         props: {
-            noUser: {default: false},
-            customHeaderMessage: {default: ''}
+            noUser: {default: false, type: Boolean},
+            customHeaderMessage: {default: '', type: String},
+            name: {default: null, type: String}
+        },
+        data(){
+          return {
+              class: ''
+          }
         },
         components: {
             Header: () => import('./Header')
+        },
+        computed: {
+            cClass(){
+                let classes = [];
+                if(this.name !== null){
+                    classes.push(this.name);
+                }
+                return classes;
+            }
         }
     }
 </script>

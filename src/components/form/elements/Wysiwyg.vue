@@ -1,5 +1,5 @@
 <template>
-    <FormElement :label="label" :name="name" :container-custom-classes="'form_element_wysiwyg'"
+    <FormElement :label="label" :name="name" container-custom-classes="form_element_wysiwyg"
                  :label-custom-classes="labelCustomClasses" :no-label="noLabel">
 
         <template v-slot:element_content>
@@ -11,7 +11,7 @@
 
 <script>
     import CKEditor from '@ckeditor/ckeditor5-vue';
-    import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+    import BalloonEditor from '@ckeditor/ckeditor5-build-balloon';
     import FormElement from "../FormElement";
 
     export default {
@@ -26,7 +26,7 @@
         },
         data() {
             return {
-                editor: ClassicEditor,
+                editor: BalloonEditor,
                 editorData: '',
                 editorConfig: {}
             }
@@ -49,22 +49,13 @@
     @import "../../../assets/scss/colors";
 
     .form_element_wysiwyg {
-        .ck.ck-toolbar {
-            background: transparent !important;
-            border-color: $shade1 !important;
-        }
+        margin: 0 !important;
 
         .ck.ck-content {
             border: 1px solid transparent !important;
             box-shadow: none !important;
             background: transparent !important;
             transition: all .3s;
-        }
-
-        &:hover .ck.ck-content {
-            border: 1px solid $shade1 !important;
-            border-bottom-left-radius: 2px !important;
-            border-bottom-right-radius: 2px !important;
         }
     }
 </style>

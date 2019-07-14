@@ -4,19 +4,32 @@
         <left-action-bar id="vueListLeftActionBar" :hasAddButton="labHasAddButton"
                          :hasDeleteButton="labHasDeleteButton"
                          :customButtons="labCustomButtons"></left-action-bar>
-        <div id="vueListContent">
-            <table id="vueList">
+        <div id="vueListContent" ref="vueListContent">
+            <table id="vueList" :class="{withPagination: isPaginationEnabled}">
                 <thead>
                     <list-header :cols="cols" :colsProperties="colsProperties" :hasRowAction="hasRowAction"
                                  v-on:list-header-sort-up="sortUp"
                                  v-on:list-header-sort-down="sortDown"
                                  v-on:list-header-search="search"/>
                 </thead>
-                <tbody>
-                    <Row v-for="dataRow in listData" :key="dataRow.id" :dataRow="dataRow" :cols="cols"
-                         :rowActions="rowActions" v-on:click.native="$emit('list-action-set', dataRow.id)"></Row>
-                </tbody>
+                    <tbody>
+                        <Row v-for="dataRow in listData" :key="dataRow.id" :dataRow="dataRow" :cols="cols"
+                             :rowActions="rowActions"
+                             v-on:click.native="$emit('list-action-set', dataRow.id)"></Row>
+                    </tbody>
             </table>
+
+            <paginate id="pagination"
+                      v-if="isPaginationEnabled"
+                      :page-count="paginationPageNumber"
+                      :force-page="paginationPosition"
+                      :click-handler="setPage"
+                      page-class="pagination-item"
+                      prev-class="pagination-prev"
+                      next-class="pagination-next"
+                      prev-text="<i class='fas fa-angle-left'></i>"
+                      next-text="<i class='fas fa-angle-right'></i>"
+            ></paginate>
         </div>
     </span>
 
@@ -27,13 +40,19 @@
     import ListHeader from './Header'
     import Xhr from './../../assets/js/xhr';
     import LeftActionBar from "./LeftActionBar";
+    import Paginate from "vuejs-paginate/src/components/Paginate";
+    import PaginationHelper from './../../assets/js/paginationHelper';
 
     export default {
         data: function () {
             return {
                 listData: [],
                 sort: {},
-                searchParams: {}
+                searchParams: {},
+                paginationPageNumber: 0,
+                paginationPosition: 1,
+                paginationRowsPerPage: 30,
+                isPaginationEnabled: false
             };
         },
         props: {
@@ -50,7 +69,7 @@
             }
         },
         components: {
-            LeftActionBar, Row, ListHeader
+            Paginate, LeftActionBar, Row, ListHeader
         },
         computed: {
             labHasAddButton() {
@@ -67,19 +86,37 @@
             }
         },
         methods: {
-            load: function () {
-                Xhr.buildGetUrl(this.apiEndpoint, Object.assign(this.searchParams, {order: this.sort}))
+            load() {
+                Xhr.buildGetUrl(this.apiEndpoint, Object.assign(this.searchParams, {
+                    order: this.sort,
+                    itemsPerPage: this.paginationRowsPerPage,
+                    page: this.paginationPosition
+                }))
                     .then(url => {
                         return Xhr.fetch(url, {method: 'GET'})
                     })
-                    .then(data => this.listData = data['hydra:member'])
+                    .then(data => {
+                        this.listData = data['hydra:member'];
+
+                        PaginationHelper.setRawResponse(data);
+                        let isPaginationEnabled = PaginationHelper.hasPagination();
+                        if (isPaginationEnabled) {
+                            this.paginationPageNumber = PaginationHelper.getPageNumber();
+                            this.isPaginationEnabled = true;
+                        }
+                    })
                     .catch(error => {
                         console.error(error);
                         alert('Une erreur est survenue');
                     });
             },
 
-            sortUp: function (colName) {
+            setPage(pageNumber) {
+                this.paginationPosition = pageNumber;
+                this.load();
+            },
+
+            sortUp(colName) {
                 if (this.sort[colName] && this.sort[colName] === 'ASC') {
                     delete this.sort[colName];
                 } else {
@@ -88,7 +125,7 @@
                 this.load();
             },
 
-            sortDown: function (colName) {
+            sortDown(colName) {
                 if (this.sort[colName] && this.sort[colName] === 'DESC') {
                     delete this.sort[colName];
                 } else {
@@ -97,7 +134,7 @@
                 this.load();
             },
 
-            search: function (searchParamName, searchValue) {
+            search(searchParamName, searchValue) {
                 if (searchValue === '') {
                     switch (searchParamName) {
                         case 'author':
@@ -120,13 +157,15 @@
                 this.load();
             }
         },
-        created: function () {
+        created() {
             this.load();
         },
     }
 </script>
 
 <style scoped lang="scss">
+    @import "../../assets/scss/colors";
+
     $leftActionBarWidth: 30px;
 
     #vueListContainer {
@@ -153,12 +192,19 @@
         flex-grow: 1;
         overflow: hidden;
         margin-left: $leftActionBarWidth;
+        display: flex;
+        flex-direction: column;
 
         #vueList {
             display: block;
             border-collapse: collapse;
             width: 100%;
             height: 100%;
+            transition: all .3s;
+
+            &.withPagination{
+                height: calc(100% - 2rem) !important;
+            }
 
             thead {
                 display: table;
@@ -184,6 +230,33 @@
 
             tr:not(.listListHeader):nth-child(2n) {
                 background-color: #fcfcfa;
+            }
+        }
+    }
+</style>
+
+<style lang="scss">
+    @import "../../assets/scss/colors";
+
+    #pagination {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+        height: 2rem;
+        background-color: $shade2;
+
+        .pagination-item, .pagination-prev, .pagination-next {
+            display: inline-block;
+            line-height: calc(2rem - 10px);
+            padding: 0 3px;
+            margin: 5px 3px;
+            border-bottom: 2px solid $shade1;
+            transition: all .3s;
+
+            &:hover, &.active {
+                border-bottom: 2px solid $shade1;
+                background-color: $shade1;
+                color: white;
             }
         }
     }

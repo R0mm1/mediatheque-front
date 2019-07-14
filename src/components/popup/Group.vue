@@ -59,6 +59,7 @@
     }
 
     .group_content {
+        overflow: auto;
         position: relative;
         flex: 1;
     }
