@@ -19,7 +19,8 @@
 
                 <div class="action_validate">
                     <slot name="action_validate">
-                        <InputButton v-on:click.native="validate" :value="validateLabel" :type="'submit'"></InputButton>
+                        <InputButton v-on:click.native="validate" :value="validateLabel" type="submit"
+                                     :disabled="!isValid"></InputButton>
                     </slot>
                 </div>
 
@@ -45,12 +46,23 @@
             cancelAction: {
                 default: () => {
                 }
+            },
+            validationMethod: {
+                default: () => true,
+                type: Function
             }
         },
         methods: {
             validate(e) {
-                this.validateAction();
-                e.preventDefault();
+                if (this.isValid) {
+                    this.validateAction();
+                    e.preventDefault();
+                }
+            }
+        },
+        computed: {
+            isValid() {
+                return this.validationMethod();
             }
         }
     }
