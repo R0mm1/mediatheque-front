@@ -12,11 +12,15 @@
                                  v-on:list-header-sort-down="sortDown"
                                  v-on:list-header-search="search"/>
                 </thead>
-                    <tbody>
+                <tbody>
+                    <template v-if="!isLoading">
                         <Row v-for="dataRow in listData" :key="dataRow.id" :dataRow="dataRow" :cols="cols"
-                             :rowActions="rowActions"
-                             v-on:click.native="$emit('list-action-set', dataRow.id)"></Row>
-                    </tbody>
+                             :rowActions="rowActions" v-on:click.native="$emit('list-action-set', dataRow.id)"></Row>
+                    </template>
+                    <template v-else>
+                        <Loader class="list-loader"></Loader>
+                    </template>
+                </tbody>
             </table>
 
             <paginate id="pagination"
@@ -42,6 +46,7 @@
     import LeftActionBar from "./LeftActionBar";
     import Paginate from "vuejs-paginate/src/components/Paginate";
     import PaginationHelper from './../../assets/js/paginationHelper';
+    import Loader from "../widgets/Loader";
 
     export default {
         data: function () {
@@ -52,7 +57,8 @@
                 paginationPageNumber: 0,
                 paginationPosition: 1,
                 paginationRowsPerPage: 30,
-                isPaginationEnabled: false
+                isPaginationEnabled: false,
+                isLoading: true
             };
         },
         props: {
@@ -69,6 +75,7 @@
             }
         },
         components: {
+            Loader,
             Paginate, LeftActionBar, Row, ListHeader
         },
         computed: {
@@ -87,6 +94,7 @@
         },
         methods: {
             load() {
+                this.isLoading = true;
                 Xhr.buildGetUrl(this.apiEndpoint, Object.assign(this.searchParams, {
                     order: this.sort,
                     itemsPerPage: this.paginationRowsPerPage,
@@ -104,6 +112,8 @@
                             this.paginationPageNumber = PaginationHelper.getPageNumber();
                             this.isPaginationEnabled = true;
                         }
+
+                        this.isLoading = false;
                     })
                     .catch(error => {
                         console.error(error);
@@ -202,7 +212,7 @@
             height: 100%;
             transition: all .3s;
 
-            &.withPagination{
+            &.withPagination {
                 height: calc(100% - 2rem) !important;
             }
 
@@ -230,6 +240,11 @@
 
             tr:not(.listListHeader):nth-child(2n) {
                 background-color: #fcfcfa;
+            }
+
+            .list-loader {
+                margin: 0 auto;
+                display: flex;
             }
         }
     }
