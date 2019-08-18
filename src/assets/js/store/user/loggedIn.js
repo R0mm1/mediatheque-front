@@ -17,17 +17,14 @@ const LoggedInModule = {
     },
     actions: {
         load(context) {
-            Xhr.buildGetUrl('/api/users/loggedIn')
+            return Xhr.buildGetUrl('/api/users/loggedIn')
                 .then(url => {
                     return Xhr.fetch(url, {
                         method: 'GET'
                     });
                 })
                 .then(user => {
-                    // context.commit('setUser')(user);
                     Vue.set(context.state, 'user', user);
-                    // context.state.user = user;
-                    console.log(context.state.user);
                 })
                 .catch(error=>{
                     console.error(error);

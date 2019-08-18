@@ -1,19 +1,40 @@
+const config = require('../mediatheque');
+
 import Vue from 'vue'
-import Vuex from 'vuex'
 import VueRouter from 'vue-router'
 import App from './App.vue'
 
 Vue.config.productionTip = false;
 Vue.use(VueRouter);
-Vue.use(Vuex);
+
+import store from './assets/js/store';
+import UserModule from './assets/js/store/user/loggedIn';
+
+if (!store.state['user']) {
+    store.registerModule('user', UserModule);
+}
 
 const router = new VueRouter({
     mode: 'history',
     routes: [
-        {path: '/login', component: () => import('./components/pages/pages/Login')},
-        {path: '/account', component: () => import('./components/pages/pages/Account')},
-        {path: '/book', component: () => import('./components/pages/pages/Book')},
-        {path: '/author', component: () => import('./components/pages/pages/Author')}
+        {
+            name: 'root',
+            path: '/',
+            beforeEnter: (to, from, next) => {
+                store.dispatch('user/load')
+                    .then(() => {
+                        if (typeof store.getters['user/getProperty']('id') === 'number') {
+                            next({path: config.default.page})
+                        } else {
+                            next({name: 'login'})
+                        }
+                    });
+            }
+        },
+        {name: 'login', path: '/login', component: () => import('./components/pages/pages/Login')},
+        {name: 'account', path: '/account', component: () => import('./components/pages/pages/Account')},
+        {name: 'book', path: '/book', component: () => import('./components/pages/pages/Book')},
+        {name: 'author', path: '/author', component: () => import('./components/pages/pages/Author')}
     ]
 });
 
