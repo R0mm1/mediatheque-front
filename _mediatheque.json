@@ -1,0 +1,12 @@
+{
+  "api": {
+    "endpoint": "###ENDPOINT###"
+  },
+  "auth": {
+    "client_id": "###CLIENTID###",
+    "client_secret": "###CLIENTSECRET###"
+  },
+  "default": {
+    "page": "\/book"
+  }
+}
