@@ -48,7 +48,12 @@
 
                 Xhr.buildGetUrl(cover)
                     .then(url => {
-                        this.src = url;
+                        return Xhr.fetch(url, {});
+                    })
+                    .then(response => response.blob())
+                    .then(data => {
+                        const urlCreator = window.URL || window.webkitURL;
+                        this.src = urlCreator.createObjectURL(data);
                     });
             }
         },
