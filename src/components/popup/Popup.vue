@@ -4,6 +4,9 @@
             <slot name="popup_header"></slot>
         </div>
         <div class="popup_body">
+            <div class="popup_loader" :class="{no_loading: loaded}">
+                <Loader></Loader>
+            </div>
             <slot name="popup_body"></slot>
         </div>
         <div class="popup_footer">
@@ -13,8 +16,14 @@
 </template>
 
 <script>
+    import Loader from "../widgets/Loader";
+
     export default {
-        name: "popup"
+        name: "popup",
+        components: {Loader},
+        props: {
+            loaded: {type: Boolean, default: false}
+        }
     }
 </script>
 
@@ -37,6 +46,7 @@
     }
 
     .popup_body {
+        position: relative;
         flex: 1;
         display: flex;
         overflow: auto;
@@ -47,5 +57,20 @@
         padding: 5px;
         display: flex;
         justify-content: flex-end;
+    }
+
+    .popup_loader{
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: #f8f5ef;
+        z-index: 1;
+        text-align: center;
+        transition: opacity .3s;
+
+        &.no_loading{
+            opacity: 0;
+            visibility: hidden;
+        }
     }
 </style>

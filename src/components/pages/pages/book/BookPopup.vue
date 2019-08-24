@@ -1,5 +1,5 @@
 <template>
-    <Popup id="bookPopup">
+    <Popup id="bookPopup" :loaded="loaded">
         <template v-slot:popup_header>
             <InputText placeholder="Titre" name="title" :value="title" custom-classes="input_title"
                        :no-label="true" v-on:input-text-changed="dataChanged"></InputText>
@@ -50,6 +50,11 @@
         props: {
             bookId: {default: null}
         },
+        data() {
+            return {
+                loaded: false
+            }
+        },
         methods: {
             dataChanged(name, value) {
                 this.$store.commit('setProperty', {propertyName: name, value: value});
@@ -83,13 +88,19 @@
         watch: {
             bookId(newValue) {
                 if (newValue) {
-                    this.loadBook(newValue);
+                    this.loadBook(newValue)
+                        .then(() => {
+                            this.loaded = true;
+                        });
                 }
             }
         },
         created() {
             if (this.bookId) {
-                this.loadBook(this.bookId);
+                this.loadBook(this.bookId)
+                    .then(() => {
+                        this.loaded = true;
+                    });
             }
         },
         store
