@@ -25,6 +25,8 @@
 </template>
 
 <script>
+    const config = require('../../../../../mediatheque');
+
     import Popup from '../../../popup/Popup';
     import InputText from '../../../form/elements/InputText';
     import InputButton from '../../../form/elements/InputButton';
@@ -54,6 +56,13 @@
             },
             save() {
                 this.$store.dispatch('saveBook')
+                    .then(() => {
+                        this.$toasted.show('Le livre a été sauvegardé', {
+                            ...config.default.notification_settings,
+                            type: 'success',
+                            icon: 'fa-check',
+                        });
+                    })
                     .catch(error => {
                         console.error(error);
                         alert("Une erreur s'est produite et le livre n'a pas pu être sauvegardé");
@@ -131,7 +140,7 @@
             width: 50%;
         }
 
-        .bookPopupColumn{
+        .bookPopupColumn {
             flex: 1;
         }
     }

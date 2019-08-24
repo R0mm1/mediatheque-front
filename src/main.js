@@ -5,6 +5,8 @@ import VueRouter from 'vue-router'
 import App from './App.vue'
 
 Vue.config.productionTip = false;
+
+//--- ROUTING ---//
 Vue.use(VueRouter);
 
 import store from './assets/js/store';
@@ -37,6 +39,10 @@ const router = new VueRouter({
         {name: 'author', path: '/author', component: () => import('./components/pages/pages/Author')}
     ]
 });
+
+//--- NOTIFICATION ---//
+import Toasted from 'vue-toasted'
+Vue.use(Toasted);
 
 new Vue({
     render: h => h(App),

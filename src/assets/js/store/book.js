@@ -158,7 +158,7 @@ const BookModule = {
             }
 
             //Save book
-            promise
+            return promise
                 .then(() => {
 
                     if (context.state.book.electronicBook instanceof MedFile) {
