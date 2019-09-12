@@ -101,6 +101,8 @@
                     .then(() => {
                         this.loaded = true;
                     });
+            }else{
+                this.loaded = true;
             }
         },
         store
