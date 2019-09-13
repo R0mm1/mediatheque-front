@@ -1,5 +1,5 @@
 <template>
-    <Popup id="authorPopup">
+    <Popup id="authorPopup" :loaded="loaded">
         <template v-slot:popup_header>
             <div class="header_separator"></div>
             <InputButton v-on:click.native="$emit('popup-wanna-close')"
@@ -49,6 +49,11 @@
         props: {
             authorId: {default: null}
         },
+        data() {
+            return {
+                loaded: false
+            }
+        },
         methods: {
             ...mapActions({
                 loadAuthor: 'author/load'
@@ -88,7 +93,10 @@
         created() {
             if (this.authorId) {
                 this.loadAuthor(this.authorId);
+            } else {
+                this.$store.commit('author/init');
             }
+            this.loaded = true;
         }
     }
 </script>
