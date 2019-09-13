@@ -102,6 +102,7 @@
                         this.loaded = true;
                     });
             }else{
+                this.$store.commit('unload');
                 this.loaded = true;
             }
         },

@@ -41,6 +41,12 @@ const BookModule = {
             });
 
         },
+        unload(state) {
+            Vue.set(state, 'book', {
+                authors: []
+            });
+            Vue.set(state.flags, 'isElectronic', false);
+        },
         setProperty(state, {propertyName, value}) {
 
             if (propertyName === 'pageCount') value = parseInt(value);
