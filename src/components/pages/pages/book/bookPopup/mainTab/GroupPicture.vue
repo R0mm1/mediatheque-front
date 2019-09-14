@@ -10,13 +10,13 @@
 </template>
 
 <script>
-    import Xhr from "../../../../../assets/js/xhr";
-    import Group from "../../../../popup/Group";
-    import InputPicture from "../../../../form/elements/InputPicture";
+    import Xhr from "../../../../../../assets/js/xhr";
+    import Group from "../../../../../popup/Group";
+    import InputPicture from "../../../../../form/elements/InputPicture";
 
-    import store from "../../../../../assets/js/store";
+    import store from "../../../../../../assets/js/store";
     import {mapState} from 'vuex';
-    import BookModule from "../../../../../assets/js/store/book";
+    import BookModule from "../../../../../../assets/js/store/book";
 
     if (!store.state['book']) {
         store.registerModule('book', BookModule);
@@ -32,7 +32,7 @@
         },
         methods: {
             pictureChanged(newFile) {
-                this.$store.dispatch('setCover', {
+                this.$store.dispatch('book/setCover', {
                     file: newFile
                 });
             }

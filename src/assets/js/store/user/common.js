@@ -8,7 +8,6 @@ const UserCommon = {
     },
     getters: {
         getProperty: (state) => (propertyName) => {
-            console.log(propertyName);
             if (state.user !== null && state.user[propertyName]) {
                 return state.user[propertyName];
             }

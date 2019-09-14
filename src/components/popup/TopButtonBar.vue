@@ -1,9 +1,10 @@
 <template>
     <div id="med_popup_topbuttonbar">
         <InputButton v-for="button in buttons" :key="button.tabName"
-                     v-on:click.native="setTab(button.tabName)"
+                     v-on:click.native="setTab(button)"
                      :label-custom-classes="button.iconClassName"
-                     :custom-classes="cIsSelected(button.tabName)">
+                     :custom-classes="cClasses(button)"
+                     :disabled="!button.isActive">
         </InputButton>
 
         <InputButton v-on:click.native="$emit('popup-wanna-close')"
@@ -27,19 +28,28 @@
             }
         },
         methods: {
-            setTab(tabName) {
-                this.selectedTabName = tabName;
-                this.$emit('tab-button-clicked', tabName);
+            setTab(topButtonBarElement) {
+                if(topButtonBarElement.isActive){
+                    this.selectedTabName = topButtonBarElement.tabName;
+                    this.$emit('tab-button-clicked', topButtonBarElement.tabName);
+                }
             },
-            cIsSelected(tabName) {
-                return (this.selectedTabName === null && tabName === this.defaultTab) || (tabName === this.selectedTabName) ? ['selected'] : [];
+            cClasses(topButtonBarElement) {
+                let classes = [];
+
+                if ((this.selectedTabName === null && topButtonBarElement.tabName === this.defaultTab) || (topButtonBarElement.tabName === this.selectedTabName)) {
+                    classes.push('selected');
+                }
+
+                return classes;
             }
         }
     }
 
-    const TopButtonBarElement = function (iconClassName, tabName) {
+    const TopButtonBarElement = function (iconClassName, tabName, isActive) {
         this.iconClassName = iconClassName;
         this.tabName = tabName;
+        this.isActive = (typeof isActive === 'boolean') ? isActive : true;
     };
 
     export {TopButtonBarElement};

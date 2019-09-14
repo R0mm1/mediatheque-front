@@ -14,11 +14,11 @@
 </template>
 
 <script>
-    import Group from "../../../../popup/Group";
-    import Wysiwyg from "../../../../form/elements/Wysiwyg";
+    import Group from "../../../../../popup/Group";
+    import Wysiwyg from "../../../../../form/elements/Wysiwyg";
 
-    import store from "../../../../../assets/js/store";
-    import BookModule from "../../../../../assets/js/store/book";
+    import store from "../../../../../../assets/js/store";
+    import BookModule from "../../../../../../assets/js/store/book";
 
     if (!store.state['book']) {
         store.registerModule('book', BookModule);
@@ -29,7 +29,7 @@
         components: {Wysiwyg, Group},
         methods: {
             summaryChanged(newContent) {
-                this.$store.commit('setProperty', {
+                this.$store.commit('book/setProperty', {
                     propertyName: 'summary',
                     value: newContent
                 });
@@ -37,7 +37,7 @@
         },
         computed: {
             cSummary(){
-                return this.$store.getters.getProperty('summary');
+                return this.$store.getters['book/getProperty']('summary');
             }
         },
         store

@@ -1,7 +1,7 @@
 <template>
     <div class="form_element" :class="containerCustomClasses">
 
-        <label class="element_label" :class="labelCustomClasses" :data-disabled="disabled" :for="name" v-if="!noLabel">
+        <label class="element_label" :class="cLabelCustomClasses" :for="name" v-if="!noLabel">
             <slot name="element_label">
                 {{label}}
             </slot>
@@ -25,6 +25,15 @@
             labelCustomClasses: {default: ''},
             hideContent: {default: false, type: Boolean},
             noLabel: {default: false, type: Boolean}
+        },
+        computed: {
+            cLabelCustomClasses() {
+                let classes = this.labelCustomClasses;
+                if (this.disabled) {
+                    classes += ' disabled';
+                }
+                return classes;
+            }
         }
     }
 </script>

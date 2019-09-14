@@ -3,17 +3,15 @@
         <template v-slot:popup_header>
             <InputText placeholder="Titre" name="title" :value="title" custom-classes="input_title"
                        :no-label="true" v-on:input-text-changed="dataChanged"></InputText>
-            <InputButton v-on:click.native="$emit('popup-wanna-close')"
-                         :label-custom-classes="'fas fa-times'" :custom-classes="['button_close']"></InputButton>
+
+            <TopButtonBar v-on:tab-button-clicked="setTab" v-on:popup-wanna-close="$emit('popup-wanna-close')"
+                          :buttons="tabs" default-tab="main">
+            </TopButtonBar>
         </template>
 
         <template v-slot:popup_body>
-            <GroupPicture class="groupPicture"></GroupPicture>
-            <div class="bookPopupColumn">
-                <GroupSummary class="groupSummary"></GroupSummary>
-                <GroupReferences></GroupReferences>
-            </div>
-            <GroupInformation class="groupInformation"></GroupInformation>
+            <MainTab v-if="currentTab === 'main'"></MainTab>
+            <SocialTab v-if="currentTab === 'social'"></SocialTab>
         </template>
 
         <template v-slot:popup_footer>
@@ -28,13 +26,9 @@
     const config = require('../../../../../mediatheque');
 
     import Popup from '../../../popup/Popup';
+    import TopButtonBar, {TopButtonBarElement} from "../../../popup/TopButtonBar";
     import InputText from '../../../form/elements/InputText';
     import InputButton from '../../../form/elements/InputButton';
-
-    import GroupInformation from "./bookPopup/GroupInformation";
-    import GroupPicture from "./bookPopup/GroupPicture";
-    import GroupSummary from "./bookPopup/GroupSummary";
-    import GroupReferences from "./bookPopup/GroupReferences";
 
     import {mapActions} from 'vuex';
     import store from '../../../../assets/js/store';
@@ -46,21 +40,26 @@
 
     export default {
         name: "BookPopup",
-        components: {GroupReferences, GroupSummary, GroupPicture, GroupInformation, InputButton, InputText, Popup},
+        components: {
+            MainTab: () => import('./bookPopup/MainTab'),
+            SocialTab: () => import('./bookPopup/SocialTab'),
+            InputButton, InputText, Popup, TopButtonBar
+        },
         props: {
             bookId: {default: null}
         },
         data() {
             return {
-                loaded: false
+                loaded: false,
+                currentTab: 'main'
             }
         },
         methods: {
             dataChanged(name, value) {
-                this.$store.commit('setProperty', {propertyName: name, value: value});
+                this.$store.commit('book/setProperty', {propertyName: name, value: value});
             },
             save() {
-                this.$store.dispatch('saveBook')
+                this.$store.dispatch('book/saveBook')
                     .then(() => {
                         this.$toasted.show('Le livre a été sauvegardé', {
                             ...config.default.notification_settings,
@@ -73,38 +72,55 @@
                         alert("Une erreur s'est produite et le livre n'a pas pu être sauvegardé");
                     })
             },
+            setTab(newTab) {
+                this.currentTab = newTab;
+            },
             ...mapActions([
-                'loadBook'
-            ])
+                'book/loadBook'
+            ]),
+            reloadBook(bookId) {
+                this.loaded = false;
+
+                if (typeof bookId === 'undefined') bookId = this.bookId;
+                if (bookId) {
+                    this['book/loadBook'](bookId)
+                        .then(() => {
+                            this.loaded = true;
+                        });
+                } else {
+                    this.$store.commit('book/unload');
+                    this.loaded = true;
+                }
+            }
         },
         computed: {
             title() {
-                return this.$store.getters.getProperty('title');
+                return this.$store.getters['book/getProperty']('title');
+            },
+            id() {
+                return this.$store.getters['book/getProperty']('id');
             },
             isModified() {
-                return this.$store.getters.getFlag('isModified');
+                return this.$store.getters['book/getFlag']('isModified');
+            },
+            tabs() {
+                let tabs = [
+                    new TopButtonBarElement('fas fa-book', 'main')
+                ];
+
+                let isSocialActive = (this.id.toString().length > 0);
+                tabs.push(new TopButtonBarElement('fas fa-comment', 'social', isSocialActive));
+
+                return tabs;
             }
         },
         watch: {
             bookId(newValue) {
-                if (newValue) {
-                    this.loadBook(newValue)
-                        .then(() => {
-                            this.loaded = true;
-                        });
-                }
+                this.reloadBook(newValue);
             }
         },
         created() {
-            if (this.bookId) {
-                this.loadBook(this.bookId)
-                    .then(() => {
-                        this.loaded = true;
-                    });
-            }else{
-                this.$store.commit('unload');
-                this.loaded = true;
-            }
+            this.reloadBook();
         },
         store
     }
@@ -125,37 +141,6 @@
             input {
                 font-size: 2.5rem;
             }
-        }
-
-        .button_close {
-            width: 4rem;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            text-align: center;
-            justify-content: center;
-
-            label {
-                font-size: 2rem;
-            }
-        }
-
-        .groupPicture {
-            width: 10%;
-            min-width: 150px;
-        }
-
-        .groupSummary {
-            height: 50%;
-        }
-
-        .groupInformation {
-            min-width: 450px;
-            width: 50%;
-        }
-
-        .bookPopupColumn {
-            flex: 1;
         }
     }
 </style>

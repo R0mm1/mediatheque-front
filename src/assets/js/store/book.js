@@ -3,11 +3,13 @@ import Vue from 'vue';
 import MedFile from '../medFile';
 
 const BookModule = {
+    namespaced: true,
     state() {
         return {
             book: {
                 authors: []
             },
+            userNotation: null,
             flags: {
                 isModified: false,
                 isElectronic: false
@@ -58,14 +60,14 @@ const BookModule = {
             Vue.set(state.flags, flagName, value);
         },
         addAuthor(state, author) {
-            let authorAtIndex = this.getters.hasAuthor(author['@id']);
+            let authorAtIndex = this.getters['book/hasAuthor'](author['@id']);
             if (authorAtIndex === false) {
                 state.book.authors.push(author);
                 state.flags.isModified = true;
             }
         },
         removeAuthor(state, author) {
-            let authorAtIndex = this.getters.hasAuthor(author['@id']);
+            let authorAtIndex = this.getters['book/hasAuthor'](author['@id']);
             if (authorAtIndex !== false) {
                 state.book.authors.splice(authorAtIndex, 1);
                 state.flags.isModified = true;
@@ -97,7 +99,7 @@ const BookModule = {
         hasAuthor: (state) => (authorIRI) => {
             let atIndex = false;
             state.book.authors.forEach((author, index) => {
-                if (author.isPrototypeOf(String)) {
+                if (Object.prototype.isPrototypeOf.call(author, String)) {
                     if (author === authorIRI) atIndex = index;
                 } else {
                     if (author['@id'] && author['@id'] === authorIRI) atIndex = index;

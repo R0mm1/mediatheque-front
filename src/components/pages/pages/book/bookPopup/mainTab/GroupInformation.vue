@@ -41,17 +41,17 @@
 </template>
 
 <script>
-    import Group from "../../../../popup/Group";
-    import InputText from "../../../../form/elements/InputText";
-    import Entities from "../../../../form/elements/Entities";
-    import BooleanSwitch from "../../../../form/elements/BooleanSwitch";
-    import Files from "../../../../form/elements/Files";
-    import Xhr from "../../../../../assets/js/xhr";
+    import Group from "../../../../../popup/Group";
+    import InputText from "../../../../../form/elements/InputText";
+    import Entities from "../../../../../form/elements/Entities";
+    import BooleanSwitch from "../../../../../form/elements/BooleanSwitch";
+    import Files from "../../../../../form/elements/Files";
+    import Xhr from "../../../../../../assets/js/xhr";
 
-    import store from "../../../../../assets/js/store";
-    import BookModule from "../../../../../assets/js/store/book";
-    import AuthorModule from "../../../../../assets/js/store/author";
-    import Select from "../../../../form/elements/Select";
+    import store from "../../../../../../assets/js/store";
+    import BookModule from "../../../../../../assets/js/store/book";
+    import AuthorModule from "../../../../../../assets/js/store/author";
+    import Select from "../../../../../form/elements/Select";
 
     if (!store.state['book']) {
         store.registerModule('book', BookModule);
@@ -66,16 +66,16 @@
         components: {Select, BooleanSwitch, Entities, InputText, Group, Files},
         methods: {
             propertyChanged(field, value) {
-                this.$store.commit('setProperty', {
+                this.$store.commit('book/setProperty', {
                     propertyName: field,
                     value: value
                 });
             },
             authorRemoved(author) {
-                this.$store.commit('removeAuthor', author);
+                this.$store.commit('book/removeAuthor', author);
             },
             authorAdded(author) {
-                this.$store.commit('addAuthor', author);
+                this.$store.commit('book/addAuthor', author);
             },
             createAuthorFromForm() {
                 this.$store.commit('author/setProperty', {
@@ -95,16 +95,16 @@
                     });
             },
             setElectronicBook(file) {
-                this.$store.commit('setProperty', {
+                this.$store.commit('book/setProperty', {
                     propertyName: 'electronicBook',
                     value: file
                 });
             },
             removeElectronicBook() {
-                this.$store.commit('deleteRelatedEbook');
+                this.$store.commit('book/deleteRelatedEbook');
             },
             setOwner(userId) {
-                this.$store.commit('setOwner', userId);
+                this.$store.commit('book/setOwner', userId);
             },
             getUserListPromise() {
                 return Xhr.buildGetUrl('/api/users')
@@ -120,44 +120,44 @@
                     })
             },
             setBookType(field, isElectronic) {
-                this.$store.commit('setFlag', {
+                this.$store.commit('book/setFlag', {
                     flagName: 'isElectronic',
                     value: isElectronic
                 });
             },
             downloadEbook() {
-                this.$store.dispatch('downloadEbook');
+                this.$store.dispatch('book/downloadEbook');
             }
         },
         computed: {
             cLanguage() {
-                return this.$store.getters.getProperty('language');
+                return this.$store.getters['book/getProperty']('language');
             },
             cYear() {
-                return this.$store.getters.getProperty('year');
+                return this.$store.getters['book/getProperty']('year');
             },
             cPageCount() {
-                return this.$store.getters.getProperty('pageCount');
+                return this.$store.getters['book/getProperty']('pageCount');
             },
             cIsbn() {
-                return this.$store.getters.getProperty('isbn');
+                return this.$store.getters['book/getProperty']('isbn');
             },
             cAuthors() {
-                return this.$store.getters.getProperty('authors')
+                return this.$store.getters['book/getProperty']('authors')
             },
             cIsElectronic() {
-                return this.$store.getters.getFlag('isElectronic');
+                return this.$store.getters['book/getFlag']('isElectronic');
             },
             cElectronicFile() {
                 let filesArray = [];
-                let file = this.$store.getters.getProperty('electronicBook');
+                let file = this.$store.getters['book/getProperty']('electronicBook');
                 if (file) {
                     filesArray.push(file);
                 }
                 return filesArray;
             },
             cOwner() {
-                let owner = this.$store.getters.getProperty('owner');
+                let owner = this.$store.getters['book/getProperty']('owner');
 
                 if (typeof owner === 'object' && typeof owner.id !== 'undefined') {
                     return owner.id;

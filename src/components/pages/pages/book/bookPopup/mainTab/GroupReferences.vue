@@ -39,18 +39,18 @@
 </template>
 
 <script>
-    import Group from "../../../../popup/Group";
-    import InputButton from "../../../../form/elements/InputButton";
-    import Accordion, {AccordionBloc} from "../../../../widgets/Accordion";
-    import SimpleList, {Element} from "../../../../widgets/SimpleList";
+    import Group from "../../../../../popup/Group";
+    import InputButton from "../../../../../form/elements/InputButton";
+    import Accordion, {AccordionBloc} from "../../../../../widgets/Accordion";
+    import SimpleList, {Element} from "../../../../../widgets/SimpleList";
 
-    import Xhr from "../../../../../assets/js/xhr";
+    import Xhr from "../../../../../../assets/js/xhr";
 
-    import store from "../../../../../assets/js/store";
-    import BookModule from "../../../../../assets/js/store/book";
-    import FormContainer from "../../../../form/FormContainer";
-    import InputText from "../../../../form/elements/InputText";
-    import Select from "../../../../form/elements/Select";
+    import store from "../../../../../../assets/js/store";
+    import BookModule from "../../../../../../assets/js/store/book";
+    import FormContainer from "../../../../../form/FormContainer";
+    import InputText from "../../../../../form/elements/InputText";
+    import Select from "../../../../../form/elements/Select";
 
     if (!store.state['book']) {
         store.registerModule('book', BookModule);
@@ -72,7 +72,7 @@
         },
         computed: {
             cBookId() {
-                return this.$store.getters.getProperty('id');
+                return this.$store.getters['book/getProperty']('id');
             }
         },
         methods: {

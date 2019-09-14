@@ -3,7 +3,7 @@
                  :label-custom-classes="labelCustomClasses" :hide-content="true">
 
         <template v-slot:element_content>
-            <input ref="input" :type="type" :name="name" :value="value"/>
+            <input ref="input" :type="type" :name="name" :value="value" :disabled="disabled"/>
         </template>
 
     </FormElement>
@@ -34,11 +34,12 @@
 </script>
 
 <style lang="scss">
+    @import "../../../assets/scss/colors";
 
     .form_element_button {
         position: relative;
         display: inline-block;
-        background: #f8f3ea;
+        background: $shade3;
         padding: 7px;
         font-size: .9rem;
         transition: all .3s;
@@ -50,15 +51,15 @@
         label {
             width: 100% !important;
             max-width: initial !important;
-            margin-left: 0px !important;
+            margin-left: 0 !important;
 
             &.disabled {
-                color: #6b6b6b;
+                color: $textDisabled;
             }
         }
 
         &:hover {
-            background-color: #e4dccc;
+            background-color: $shade2;
         }
     }
 </style>
