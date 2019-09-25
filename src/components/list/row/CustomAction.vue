@@ -1,74 +1,63 @@
 <template>
-    <div class="rowCustomAction" v-if="isDisplayed">
-        <InputButton :value="''" :label-custom-classes="this.data.class"
+    <div class="rowCustomAction" v-if="rowAction.isDisplayed(rowData)">
+        <InputButton value="" :label-custom-classes="rowAction.iconClassname"
                      v-on:click.native="triggerCustomAction"></InputButton>
 
-        <div class="customActionConfirm" v-if="confirm.length>0" :class="{isDisplayed: confirmDisplayed}">
-            {{confirm}}
+        <div class="customActionConfirm" v-if="rowAction.needConfirm" :class="{isDisplayed: confirmDisplayed}">
+            {{rowAction.confirmMessage}}
         </div>
     </div>
 
 </template>
 
-<script>
-    import InputButton from "../../form/elements/InputButton";
+<script lang="ts">
+    import RowAction from "@/assets/ts/list/RowAction";
+    import {Component, Prop, Vue} from "vue-property-decorator";
 
-    export default {
-        name: "CustomAction",
-        components: {InputButton},
-        props: {
-            data: {},
-            name: '',
-            rowData: {}
-        },
-        data: function () {
-            return {
-                clickCounter: 0,
-                confirmDisplayed: false
-            }
-        },
-        computed: {
-            confirm: function () {
-                return (typeof this.data.confirm !== 'undefined') ? this.data.confirm : '';
-            },
-            isDisplayed: function () {
-                let isDisplayed = true;
-                if (typeof this.data.getIsDisplayed === 'function') {
-                    isDisplayed = this.data.getIsDisplayed(this.rowData);
+    @Component({
+        components: {
+            InputButton: () => import("../../form/elements/InputButton.vue")
+        }
+    })
+    export default class CustomAction extends Vue {
+        @Prop(Object) rowAction!: RowAction;
+        @Prop(Object) rowData!: object;
+
+        clickCounter: number = 0;
+        confirmDisplayed: boolean = false;
+
+        triggerCustomAction(event: MouseEvent) {
+
+            this.clickCounter++;
+
+            let triggerEvent = true;
+            if (this.rowAction.needConfirm) {
+                if (this.clickCounter === 1) {
+                    this.confirmDisplayed = true;
+                    triggerEvent = false;
                 }
-                return isDisplayed;
             }
-        },
-        methods: {
-            triggerCustomAction: function (event) {
 
-                this.clickCounter++;
-
-                let triggerEvent = true;
-                if (typeof this.data.confirm !== 'undefined') {
-                    if (this.clickCounter === 1) {
-                        this.confirmDisplayed = true;
-                        triggerEvent = false;
-                    }
-                }
-
-                if (triggerEvent) {
-                    this.$emit('custom-action-triggered', this.name);
-                    this.confirmDisplayed = false;
-                    this.clickCounter = 0;
-                }
-
-                event.stopPropagation();
+            if (triggerEvent) {
+                this.$emit('custom-action-triggered', this.rowAction.id);
+                this.confirmDisplayed = false;
+                this.clickCounter = 0;
             }
+
+            event.stopPropagation();
         }
     }
 </script>
 
 <style scoped lang="scss">
+    .rowCustomAction{
+        position: relative;
+    }
+
     .form_element_button {
         border-radius: 50%;
-        width: 10px;
-        height: 10px;
+        width: 13px;
+        height: 13px;
         text-align: center;
         font-size: .8rem;
     }

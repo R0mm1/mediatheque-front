@@ -6,7 +6,7 @@
             <BookPopup v-if="isPopupDisplayed" :bookId="bookPopupElementId" v-on:popup-wanna-close="closePopup"
                        v-on:book-saved="bookSaved"></BookPopup>
 
-            <List ref="list" :apiEndpoint="'/api/books'" :cols="listCols" :colsProperties="listColsProperties"
+            <List ref="list" apiEndpoint="/api/books" :cols="cols"
                   :rowActions="rowActions" v-on:custom-action-triggered="customActionTriggered"
                   v-on:list-action-add="newBook" v-on:list-action-set="setBook"/>
 
@@ -15,6 +15,10 @@
 </template>
 
 <script>
+    import Column from "../../../assets/ts/list/Column";
+    import DataSubProperty from "../../../assets/ts/list/DataSubProperty";
+    import RowAction from "../../../assets/ts/list/RowAction";
+
     import Page from './../Page';
     import List from './../../list/List';
     import Book from './../../../assets/js/book';
@@ -37,29 +41,26 @@
             return {
                 isPopupDisplayed: false,
                 bookPopupElementId: null,
-                listCols: {
-                    'Titre': 'title',
-                    'Année': 'year',
-                    'Langue': 'language',
-                    'Auteur': {'authors': ['firstname', 'lastname']}
-                },
-                listColsProperties: {
-                    'Auteur': {'sort': false, 'searchName': ['author']}
-                },
-                rowActions: {
-                    'download': {
-                        'label': '',
-                        'class': 'fas fa-file-download',
-                        'getIsDisplayed': function (book) {
-                            return (typeof book.ebook != 'undefined');
-                        }
-                    },
-                    'delete': {
-                        'label': '',
-                        'class': 'far fa-trash-alt',
-                        'confirm': 'Re-cliquez pour confirmer la suppression'
-                    }
-                }
+                cols: [
+                    new Column('title', 'Titre'),
+                    new Column('year', 'Année'),
+                    new Column('language', 'Langue'),
+                    new Column('authors', 'Auteurs')
+                        .setSearchParameterName('authorFullname')
+                        .setSubProperties([
+                            new DataSubProperty('firstname'),
+                            new DataSubProperty('lastname')
+                        ])
+                ],
+                rowActions: [
+                    new RowAction('download', '', 'fas fa-file-download')
+                        .setIsDisplayed(book => {
+                            return typeof book.electronicBook === 'string'
+                                && book.electronicBook.length > 0;
+                        }),
+                    new RowAction('delete', '', 'far fa-trash-alt')
+                        .setNeedConfirm(true, 'Re-cliquez pour confirmer la suppression')
+                ]
             }
         },
         methods: {
@@ -71,13 +72,16 @@
                 this.bookPopupElementId = bookId;
                 this.isPopupDisplayed = true;
             },
-            customActionTriggered: function (action, bookId) {
+            customActionTriggered(action, bookId) {
                 switch (action) {
                     case 'download':
-                        Book.downloadEBook(bookId);
+                        this.$store.dispatch('book/loadBook', bookId)
+                            .then(() => {
+                                this.$store.dispatch('book/downloadEbook')
+                            });
                         break;
                     case 'delete':
-                        this.$store.dispatch('deleteBook', bookId)
+                        this.$store.dispatch('book/deleteBook', bookId)
                             .then(() => {
                                 this.$refs.list.load();
                             });

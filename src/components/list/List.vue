@@ -1,16 +1,14 @@
 <template>
 
     <span id="vueListContainer">
-        <left-action-bar id="vueListLeftActionBar" :hasAddButton="labHasAddButton"
-                         :hasDeleteButton="labHasDeleteButton"
-                         :customButtons="labCustomButtons"></left-action-bar>
+        <left-action-bar id="vueListLeftActionBar" :leftActionBarProperties="leftActionBarProperties"></left-action-bar>
         <div id="vueListContent" ref="vueListContent">
             <table id="vueList" :class="{withPagination: isPaginationEnabled}">
                 <thead>
-                    <list-header :cols="cols" :colsProperties="colsProperties" :hasRowAction="hasRowAction"
-                                 v-on:list-header-sort-up="sortUp"
-                                 v-on:list-header-sort-down="sortDown"
-                                 v-on:list-header-search="search"/>
+                    <list-header :cols="cols" :hasRowAction="hasRowAction"
+                                 v-on:list-header-sort-up="queryParamsChanged"
+                                 v-on:list-header-sort-down="queryParamsChanged"
+                                 v-on:list-header-search="queryParamsChanged"/>
                 </thead>
                 <tbody>
                     <template v-if="!isLoading">
@@ -39,137 +37,74 @@
 
 </template>
 
-<script>
-    import Row from './Row'
-    import ListHeader from './Header'
+<script lang="ts">
+
+    import {Component, Prop, Vue, Watch} from "vue-property-decorator";
+    import {getModule} from "vuex-module-decorators";
+
     import Xhr from './../../assets/js/xhr';
-    import LeftActionBar from "./LeftActionBar";
-    import Paginate from "vuejs-paginate/src/components/Paginate";
-    import PaginationHelper from './../../assets/js/paginationHelper';
-    import Loader from "../widgets/Loader";
 
-    export default {
-        data: function () {
-            return {
-                listData: [],
-                sort: {},
-                searchParams: {},
-                paginationPageNumber: 0,
-                paginationPosition: 1,
-                paginationRowsPerPage: 30,
-                isPaginationEnabled: false,
-                isLoading: true
-            };
-        },
-        props: {
-            leftActionBarProperties: {
-                default: () => ({})
-            },
-            cols: {},
-            colsProperties: {
-                default: () => ({})
-            },
-            apiEndpoint: {},
-            rowActions: {
-                default: () => ([])
-            }
-        },
+    import Column from "@/assets/ts/list/Column";
+    import RowAction from "@/assets/ts/list/RowAction";
+    import LeftActionBarProperties from '@/assets/ts/list/LeftActionBarProperties';
+
+    import ListModule from '@/assets/ts/store/ListModule';
+
+    const listModule = getModule(ListModule);
+
+    @Component({
         components: {
-            Loader,
-            Paginate, LeftActionBar, Row, ListHeader
-        },
-        computed: {
-            labHasAddButton() {
-                return (typeof this.leftActionBarProperties.hasAddButton != 'undefined' ? this.leftActionBarProperties.hasAddButton : true);
-            },
-            labHasDeleteButton() {
-                return (typeof this.leftActionBarProperties.hasDeleteButton != 'undefined' ? this.leftActionBarProperties.hasDeleteButton : true);
-            },
-            labCustomButtons() {
-                return (typeof this.leftActionBarProperties.customButtons != 'undefined' ? this.leftActionBarProperties.customButtons : {});
-            },
-            hasRowAction() {
-                return Object.keys(this.rowActions).length > 0;
-            }
-        },
-        methods: {
-            load() {
-                this.isLoading = true;
-                Xhr.buildGetUrl(this.apiEndpoint, Object.assign(this.searchParams, {
-                    order: this.sort,
-                    itemsPerPage: this.paginationRowsPerPage,
-                    page: this.paginationPosition
-                }))
-                    .then(url => {
-                        return Xhr.fetch(url, {method: 'GET'})
-                    })
-                    .then(data => {
-                        this.listData = data['hydra:member'];
+            Row: () => import('@/components/list/Row.vue'),
+            ListHeader: () => import('@/components/list/Header.vue'),
+            LeftActionBar: () => import('@/components/list/LeftActionBar.vue'),
+            Paginate: () => import('vuejs-paginate/src/components/Paginate.vue'),
+            Loader: () => import('@/components/widgets/Loader.vue')
+        }
+    })
+    export default class List extends Vue {
+        listData: {}[] = [];
+        isPaginationEnabled: boolean = false;
+        isLoading: boolean = true;
 
-                        PaginationHelper.setRawResponse(data);
-                        let isPaginationEnabled = PaginationHelper.hasPagination();
-                        if (isPaginationEnabled) {
-                            this.paginationPageNumber = PaginationHelper.getPageNumber();
-                            this.isPaginationEnabled = true;
-                        }
+        @Prop(Array) cols!: Column[];
+        @Prop(String) apiEndpoint!: string;
 
-                        this.isLoading = false;
-                    })
-                    .catch(error => {
-                        console.error(error);
-                        alert('Une erreur est survenue');
-                    });
-            },
+        @Prop({type: Object, default: () => new LeftActionBarProperties()})
+        leftActionBarProperties!: LeftActionBarProperties;
+        @Prop({type: Array, default: () => []})
+        rowActions!: RowAction[];
 
-            setPage(pageNumber) {
-                this.paginationPosition = pageNumber;
-                this.load();
-            },
+        get hasRowAction() {
+            return this.rowActions.length > 0;
+        }
 
-            sortUp(colName) {
-                if (this.sort[colName] && this.sort[colName] === 'ASC') {
-                    delete this.sort[colName];
-                } else {
-                    this.sort[colName] = 'ASC';
-                }
-                this.load();
-            },
+        queryParamsChanged() {
+            this.load(false);
+        }
 
-            sortDown(colName) {
-                if (this.sort[colName] && this.sort[colName] === 'DESC') {
-                    delete this.sort[colName];
-                } else {
-                    this.sort[colName] = 'DESC';
-                }
-                this.load();
-            },
+        load(fromCache: boolean = true) {
+            this.isLoading = true;
 
-            search(searchParamName, searchValue) {
-                if (searchValue === '') {
-                    switch (searchParamName) {
-                        case 'author':
-                            delete this.searchParams[searchParamName + 'firstname'];
-                            delete this.searchParams[searchParamName + 'lastname'];
-                            break;
-                        default:
-                            delete this.searchParams[searchParamName];
-                    }
-                } else {
-                    switch (searchParamName) {
-                        case 'author':
-                            this.searchParams[searchParamName + 'firstname'] = searchValue;
-                            this.searchParams[searchParamName + 'lastname'] = searchValue;
-                            break;
-                        default:
-                            this.searchParams[searchParamName] = searchValue;
-                    }
-                }
-                this.load();
-            }
-        },
+            listModule.computeSearchString({getFromCache: fromCache, apiEndpoint: this.apiEndpoint})
+                .then(() => {
+                    const url = listModule.searchQuery;
+                    return Xhr.fetch(url, {method: 'GET'});
+                })
+                .then((data: { [index: string]: any }) => {
+                    this.listData = data['hydra:member'];
+                    this.isLoading = false;
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        }
+
         created() {
-            this.load();
-        },
+            this.cols.forEach((col: Column) => {
+                listModule.addColumn(col);
+            });
+            this.load(false);
+        }
     }
 </script>
 
@@ -191,7 +126,7 @@
         height: 100%;
         transition: width .3s;
         background-color: #eeeae1;
-        z-index: 2;
+        z-index: 10;
 
         &:hover {
             width: 170px;

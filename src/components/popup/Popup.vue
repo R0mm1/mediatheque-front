@@ -32,7 +32,7 @@
         display: flex;
         flex-direction: column;
         position: absolute;
-        z-index: 3;
+        z-index: 11;
         width: calc(100% - 20px);
         height: calc(100% - 20px);
         margin: 10px;

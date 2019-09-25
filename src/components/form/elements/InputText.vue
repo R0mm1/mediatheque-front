@@ -3,7 +3,9 @@
                  :container-custom-classes="cCustomClasses" :no-label="noLabel">
 
         <template v-slot:element_content>
+            <!-- todo: Both input-text-changed and input-text-keyup events are to be removed in the future-->
             <input type="text" :name="name" v-model="elValue" :placeholder="placeholder"
+                   v-on:input="$emit('input', elValue)"
                    v-on:change="$emit('input-text-changed', name, elValue)"
                    v-on:keyup="$emit('input-text-keyup', name, elValue)"/>
         </template>
@@ -37,6 +39,9 @@
             },
             getValue() {
                 return this.elValue;
+            },
+            emitEvent(name, elValue){
+
             }
         },
         computed: {

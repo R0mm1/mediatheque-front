@@ -1,94 +1,99 @@
 <template>
     <tr class="listRow" :id="elementId">
-        <td v-for="(col, index) in cols" :key="index" class="cell">
-            {{getValueFromColDef(col)}}
+
+        <td v-for="column in cols" :key="column.dataField" class="cell">
+            {{getValue(column)}}
         </td>
 
         <td v-if="hasRowAction" class="listRowCustomActions">
-            <CustomAction v-for="(actionData, actionName) in rowActions"
-                          :key="actionName"
-                          :data="actionData"
-                          :name="actionName"
+            <CustomAction v-for="rowAction in rowActions"
+                          :key="rowAction.id"
+                          :rowAction="rowAction"
                           :rowData="dataRow"
                           v-on:custom-action-triggered="customActionTriggered"></CustomAction>
         </td>
     </tr>
 </template>
 
-<script>
-    import CustomAction from "./row/CustomAction";
+<script lang="ts">
+    import {Component, Emit, Prop, Vue} from 'vue-property-decorator';
+    import Column from "@/assets/ts/list/Column";
+    import DataSubProperty from "@/assets/ts/list/DataSubProperty";
+    import RowAction from "@/assets/ts/list/RowAction";
 
-    export default {
-        name: 'Row',
-        components: {CustomAction},
-        props: ['dataRow', 'cols', 'rowActions'],
-        data: function () {
-            return {
-                'rowActionClicks': {}
-            }
-        },
-        computed: {
-            elementId: function () {
-                return 'el' + (this.dataRow['id'] ? this.dataRow['id'] : Math.random().toString());
-            },
-            hasRowAction: function () {
-                return Object.keys(this.rowActions).length > 0;
-            }
-        },
-        methods: {
-            getValueFromColDef: function (path, scope) {
+    @Component({
+        components: {
+            CustomAction: () => import("./row/CustomAction.vue")
+        }
+    })
+    export default class Row extends Vue {
+        rowActionClicks: object = {};
+        rowId: any;
 
-                var self = this;
-                var value = '';
+        @Prop(Object) dataRow: any;
+        @Prop(Array) cols!: Column[];
+        @Prop(Array) rowActions!: RowAction[];
 
-                path = JSON.parse(JSON.stringify(path));
+        get elementId() {
+            return 'el' + (this.dataRow['id'] ? this.dataRow['id'] : Math.random().toString());
+        }
 
-                if (typeof scope === 'undefined') scope = this.dataRow;
-                scope = JSON.parse(JSON.stringify(scope));
+        get hasRowAction() {
+            return this.rowActions.length > 0;
+        }
 
-                if (Array.isArray(path)) {
-                    //If path is array, it's some properties we wan't to extract from the scope
-                    var extractFromScope = function (scopeElement) {
-                        var values = [];
-                        path.forEach(function (pathElement) {
-                            if (scopeElement[pathElement]) {
-                                values.push(scopeElement[pathElement]);
-                            }
-                        });
-                        return values.join(' ');
-                    };
+        getValue(column: Column, scope?: any) {
 
-                    //The scope may be an array of object or just an object
-                    if (Array.isArray(scope)) {
-                        values = [];
-                        scope.forEach(function (scopeElement) {
-                            values.push(extractFromScope(scopeElement));
-                        });
-                        value = values.join(', ');
-                    } else {
-                        value = extractFromScope(scope);
-                    }
+            if (typeof scope === 'undefined') scope = this.dataRow;
+            scope = JSON.parse(JSON.stringify(scope));
 
-                } else if (typeof path === 'object') {
-                    //If path is an object, it indicate in value some properties to extract from an object in the scope
-                    //having the same name as the key
+            let value = scope[column.dataField];
 
-                    var values = [];
-                    Object.keys(path).forEach(function (element) {
-                        values.push(self.getValueFromColDef(path[element], scope[element]));
-                    });
-                    value = values.join(' ');
-                } else if (typeof path === 'string' && scope[path]) {
-                    //If path is a string, it's a property name to extract from the scope
+            if (typeof value === 'undefined') return '';
 
-                    value = scope[path];
+            const extractSubProperties = (root: any, subProperties: DataSubProperty[], joinValueSeparator: string, joinCollectionSeparator: string): string => {
+                let values: string;
+
+                if (Array.isArray(root)) {
+                    values = root.map(object => {
+                        return extractSubProperties(object, subProperties, joinValueSeparator, joinCollectionSeparator);
+                    }).join(joinCollectionSeparator);
+                } else {
+                    values = subProperties.map(subProperty => {
+                        let value = root[subProperty.name];
+                        if (typeof value === 'undefined') throw "Invalid subproperty " + subProperty.name;
+
+                        const hasChildren = subProperty.children.length > 0;
+                        if (typeof value !== "string" && hasChildren) {
+                            value = extractSubProperties(value, subProperty.children, subProperty.childrenJoinValueSeparator, subProperty.childrenJoinCollectionSeparator);
+                        } else if (typeof value !== "string" && !hasChildren) {
+                            throw "The value is not a string but we don't have any subproperty to extract from it";
+                        } else if (typeof value === "string" && hasChildren) {
+                            throw "We can't extract subproperties from a string";
+                        }
+
+                        return value;
+                    }).join(joinValueSeparator);
                 }
 
-                return value;
-            },
-            customActionTriggered: function (actionName) {
-                this.$parent.$emit('custom-action-triggered', actionName, this.dataRow['id']);
+                return values;
+            };
+
+            if (typeof value !== 'string' && value !== null) {
+                if (column.subProperties.length === 0) throw "The root isn't a string and no sub property to extract from it is specified";
+
+                value = extractSubProperties(value, column.subProperties, column.joinValueSeparator, column.joinCollectionSeparator);
             }
+
+            return value;
+        }
+
+        customActionTriggered(actionName: string) {
+            this.$parent.$emit('custom-action-triggered', actionName, this.dataRow['id']);
+        }
+
+        created() {
+            this.rowId = 'el' + (this.dataRow['id'] ? this.dataRow['id'] : Math.random().toString());
         }
     }
 </script>
@@ -98,7 +103,7 @@
         height: calc(1.5rem - 2px);
         transition: all 0.3s;
         border-style: solid;
-        border-width: 1px 0px 1px 0px;
+        border-width: 1px 0 1px 0;
         border-color: transparent;
     }
 
