@@ -18,31 +18,6 @@ const BookModule = {
         }
     },
     mutations: {
-        setBook(state, book) {
-
-            let promise = Promise.resolve();
-
-            if (typeof book.electronicBook === 'string') {
-                promise = promise
-                    .then(() => {
-                        return Xhr.buildGetUrl(book.electronicBook + '/raw');
-                    })
-                    .then(url => {
-                        return Xhr.fetch(url, {});
-                    })
-                    .then(electronicBookRawData => {
-                        return new Promise(resolve => {
-                            resolve(book.electronicBook = new MedFile(null, electronicBookRawData['name'], electronicBookRawData['id'], false));
-                        });
-                    })
-            }
-
-            promise.then(() => {
-                Vue.set(state, 'book', book);
-                Vue.set(state.flags, 'isElectronic', book.electronicBook instanceof MedFile);
-            });
-
-        },
         unload(state) {
             Vue.set(state, 'book', {
                 authors: []
@@ -116,9 +91,34 @@ const BookModule = {
                 })
                 .then(data => {
                     return new Promise(resolve => {
-                        resolve(context.commit('setBook', data));
+                        resolve(context.dispatch('setBook', data));
                     });
                 });
+        },
+
+        setBook({state}, book) {
+
+            let promise = Promise.resolve();
+
+            if (typeof book.electronicBook === 'string') {
+                promise = promise
+                    .then(() => {
+                        return Xhr.buildGetUrl(book.electronicBook + '/raw');
+                    })
+                    .then(url => {
+                        return Xhr.fetch(url, {});
+                    })
+                    .then(electronicBookRawData => {
+                        return new Promise(resolve => {
+                            resolve(book.electronicBook = new MedFile(null, electronicBookRawData['name'], electronicBookRawData['id'], false));
+                        });
+                    })
+            }
+
+            return promise.then(() => {
+                Vue.set(state, 'book', book);
+                Vue.set(state.flags, 'isElectronic', book.electronicBook instanceof MedFile);
+            });
         },
         setCover(context, {file}) {
             return Xhr.buildGetUrl('/api/book/covers')
@@ -186,7 +186,7 @@ const BookModule = {
                     })
                 })
                 .then(book => {
-                    context.commit('setBook', book);
+                    context.dispatch('setBook', book);
 
                     //Delete old ebook if needed
                     if (context.state.eBookToDelete !== null) {

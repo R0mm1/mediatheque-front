@@ -8,7 +8,7 @@ const Xhr = {
         let now = Math.floor(Date.now() / 1000);
 
         if (typeof createdAt !== 'number' || (createdAt + expiresIn - 60) < now) {
-            return new Promise.resolve(() => {
+            return Promise.resolve(() => {
                 let formData = new FormData();
                 formData.append('grant_type', 'refresh_token');
                 formData.append('client_id', config.auth.client_id);

@@ -1,33 +1,34 @@
 <template>
     <div id="leftActionBar">
         <div id="labColorBar"></div>
-        <bar-element v-if="hasAddButton" :icon="'fas fa-plus'" :text="'Ajouter'"
+        <bar-element v-if="leftActionBarProperties.hasAddButton" icon="fas fa-plus" text="Ajouter"
                      v-on:click.native="$parent.$emit('list-action-add')"></bar-element>
-        <bar-element v-if="hasDeleteButton" :icon="'fas fa-minus'" :text="'Supprimer'"
-                     v-on:click.native="$parent.$emit('list-action-delete')"></bar-element>
+
+        <bar-element v-for="(labButton, index) in leftActionBarProperties.customButtons"
+                     :icon="labButton.icon" :text="labButton.label" :key="index"
+                     v-on:click.native="labButton.callback"></bar-element>
     </div>
 </template>
 
-<script>
-    import BarElement from './leftActionBar/BarElement';
+<script lang="ts">
+    import {Component, Prop, Vue} from "vue-property-decorator";
+    import LeftActionBarProperties from "../../assets/ts/list/LeftActionBarProperties";
 
-    export default {
-        name: "leftActionBar",
-        components: {BarElement},
-        props: {
-            customButtons: {'type': Object, 'default': {}},
-            hasAddButton: {'type': Boolean, 'default': true},
-            hasDeleteButton: {'type': Boolean, 'default': true}
-        },
+    @Component({
+        components: {
+            BarElement: () => import('@/components/list/leftActionBar/BarElement.vue')
+        }
+    })
+    export default class LeftActionBar extends Vue {
+        @Prop(Object) leftActionBarProperties!: LeftActionBarProperties;
     }
 </script>
 
 <style scoped lang="scss">
-    #labColorBar{
+    #labColorBar {
         height: 100%;
         width: 30px;
         position: fixed;
         background-color: #e4dccc;
-        z-index: 0;
     }
 </style>

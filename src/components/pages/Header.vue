@@ -29,10 +29,12 @@
     @import "../../assets/scss/colors";
 
     #vueHeader {
+        position: relative;
         display: flex;
         flex: 1;
         background-color: $shade2;
         height: 100px;
+        z-index: 10;
 
         #mainLogo {
             display: inline-block;

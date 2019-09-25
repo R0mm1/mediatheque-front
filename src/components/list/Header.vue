@@ -1,75 +1,95 @@
 <template>
     <tr class="listListHeader">
-        <th v-for="(colDataAttribute, colName) in cols" class="cell">
-            <div class="headerRow headerRow1">
-                <div class="headerRowLabel">{{colName}}</div>
-                <button v-if="isSearchEnabled(colName)"
-                        class="headerSearchButton fas fa-ellipsis-h"
-                        v-on:click="toggleRowTwo(colDataAttribute)"></button>
-                <div v-if="isSortEnabled(colName)" class="buttonGroup">
+        <th v-for="column in cols" class="cell" :key="column.dataField">
+            <div class="headerRow">
+
+                <div class="headerRowLabel">{{column.label}}</div>
+
+                <button v-if="column.isSearchable"
+                        class="headerTogglePopupButton fas fa-ellipsis-h"
+                        :class="{isActive: isButtonPopupLocked(column.dataField)}"
+                        v-on:click="toggleRowTwo(column.dataField)"></button>
+
+                <div v-if="column.isSortable" class="buttonGroup">
                     <button class="headerSortButtonUp fas fa-sort-up"
-                            v-on:click="$emit('list-header-sort-up', colDataAttribute)"></button>
+                            :class="{isActive: column.sortState === column.sortUp}"
+                            v-on:click="sortUpSwitched(column)"></button>
                     <button class="headerSortButtonDown fas fa-sort-down"
-                            v-on:click="$emit('list-header-sort-down', colDataAttribute)"></button>
+                            :class="{isActive: column.sortState === column.sortDown}"
+                            v-on:click="sortDownSwitched(column)"></button>
                 </div>
             </div>
-            <div class="headerRow headerRow2 headerRowFloating" v-if="isSearchEnabled(colName)"
-                 :class="{headerRowHidden: !listDisplayRowTwo[colDataAttribute]}">
-                <div class="headerRowContent">
-                    <inputText :ref="'search_'+getSearchName(colName)" :placeholder="'Rechercher...'"></inputText>
-                    <button :name="'submitSearch_'+getSearchName(colName)"
-                            v-on:click="search"
-                            class="fas fa-search"></button>
-                </div>
-            </div>
+
+            <HeaderPopup
+                    :column="column"
+                    :is-displayed="isPopupDisplayed(column.dataField)"
+                    v-on:list-header-search="searchFiltered"></HeaderPopup>
+
         </th>
 
         <th v-if="hasRowAction"></th>
     </tr>
 </template>
 
-<script>
-    import InputText from '../form/elements/InputText';
+<script lang="ts">
+    import {Component, Emit, Prop, Vue} from "vue-property-decorator";
+    import {getModule} from "vuex-module-decorators";
 
-    export default {
-        name: 'Header',
-        components: {InputText},
-        props: ['cols', 'colsProperties', 'hasRowAction'],
-        data() {
-            return {
-                listDisplayRowTwo: {}
+    import Column from "@/assets/ts/list/Column";
+
+    import ListModule from '@/assets/ts/store/ListModule';
+
+    const listModule = getModule(ListModule);
+
+
+    @Component({
+        components: {
+            HeaderPopup: () => import("@/components/list/HeaderPopup.vue")
+        }
+    })
+    export default class Header extends Vue {
+        @Prop(Array) cols!: Column[];
+        @Prop(Boolean) hasRowAction!: Boolean;
+
+        listDisplayPopup: { [index: string]: boolean } = {};
+        listHasPopupNotice: { [index: string]: boolean } = {};
+
+        toggleRowTwo(dataField: string) {
+            if (typeof this.listDisplayPopup[dataField] === 'undefined') {
+                this.$set(this.listDisplayPopup, dataField, true);
+            } else {
+                this.$set(this.listDisplayPopup, dataField, !this.listDisplayPopup[dataField]);
             }
-        },
-        methods: {
-            isSearchEnabled: function (colName) {
-                return !this.colsProperties[colName]
-                    || (typeof this.colsProperties[colName]['search'] === 'undefined')
-                    || this.colsProperties[colName]['search'] === true;
-            },
-            isSortEnabled: function (colName) {
-                return !this.colsProperties[colName]
-                    || (typeof this.colsProperties[colName]['sort'] === 'undefined')
-                    || this.colsProperties[colName]['sort'] === true;
-            },
-            getSearchName: function (colName) {
-                if (this.colsProperties[colName] && this.colsProperties[colName]['searchName']) {
-                    return this.colsProperties[colName]['searchName'];
-                } else {
-                    return this.cols[colName];
-                }
-            },
-            toggleRowTwo: function (colDataAttribute) {
-                if (!this.listDisplayRowTwo[colDataAttribute]) {
-                    this.$set(this.listDisplayRowTwo, colDataAttribute, true);
-                } else {
-                    this.$set(this.listDisplayRowTwo, colDataAttribute, !this.listDisplayRowTwo[colDataAttribute]);
-                }
-            },
-            search: function (e) {
-                let searchParamName = e.target.name.split("submitSearch_")[1];
-                let searchValue = this.$refs['search_' + searchParamName][0].getValue();
-                this.$emit('list-header-search', searchParamName, searchValue);
-            }
+        }
+
+        setHasPopupNotice(dataField: string, hasPopupNotice: boolean) {
+            this.$set(this.listHasPopupNotice, dataField, hasPopupNotice);
+        }
+
+        isPopupDisplayed(dataField: string) {
+            return this.listDisplayPopup[dataField];
+        }
+
+        isButtonPopupLocked(dataField: string) {
+            return this.isPopupDisplayed(dataField) || this.listHasPopupNotice[dataField];
+        }
+
+        @Emit('list-header-sort-up')
+        sortUpSwitched(column: Column) {
+            listModule.handleSortState({dataField: column.dataField, sortState: column.sortUp});
+            return column;
+        }
+
+        @Emit('list-header-sort-down')
+        sortDownSwitched(column: Column) {
+            listModule.handleSortState({dataField: column.dataField, sortState: column.sortDown});
+            return column;
+        }
+
+        @Emit('list-header-search')
+        searchFiltered(column: Column) {
+            this.setHasPopupNotice(column.dataField, column.searchString.length > 0);
+            return column;
         }
     }
 </script>
@@ -87,47 +107,11 @@
         }
 
         .headerRow {
-            &.headerRowHidden {
-                .headerRowContent {
-                    margin-top: -55px !important;
-                }
-            }
-
-            &.headerRowFloating {
-                overflow: hidden;
-                position: absolute;
-                right: 0;
-
-                .headerRowContent {
-                    transition: all .3s;
-                    display: flex;
-                    border: 1px solid $shade1;
-                    background-color: $shade4;
-                    padding: 5px;
-                    margin-top: 5px;
-                }
-            }
-
-            button {
-                border: none;
-                background: $shade4;
-                transition: background-color .3s, color .3s;
-
-                &:hover {
-                    background: #bbaf99;
-                    color: white;
-                }
-            }
-
-            > button {
-                padding: 5px;
-            }
-        }
-
-        .headerRow1 {
+            position: relative;
+            z-index: 2;
             display: flex;
             height: 100%;
-            border-right: 1px solid #d0c3a9;
+            border-right: 1px solid $shade1;
 
             .headerRowLabel {
                 flex-grow: 1;
@@ -136,7 +120,7 @@
 
             .buttonGroup {
                 height: 100%;
-                border-radius: 0px 5px 0px 0px;
+                border-radius: 0 5px 0 0;
                 overflow: hidden;
 
                 > button {
@@ -144,14 +128,20 @@
                     height: 50%;
                 }
             }
-        }
 
-        .headerRow2 {
-            width: 100%;
+            button {
+                border: none;
+                background: $shade4;
+                transition: background-color .3s, color .3s;
 
-            .form_element input {
-                margin-bottom: initial !important;
-                height: 19px;
+                &:hover, &.isActive {
+                    background: $shade0;
+                    color: white;
+                }
+            }
+
+            > button {
+                padding: 5px;
             }
         }
     }
