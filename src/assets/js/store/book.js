@@ -23,6 +23,7 @@ const BookModule = {
                 authors: []
             });
             Vue.set(state.flags, 'isElectronic', false);
+            Vue.set(state.flags, 'isModified', false);
         },
         setProperty(state, {propertyName, value}) {
 
@@ -118,6 +119,7 @@ const BookModule = {
             return promise.then(() => {
                 Vue.set(state, 'book', book);
                 Vue.set(state.flags, 'isElectronic', book.electronicBook instanceof MedFile);
+                Vue.set(state.flags, 'isModified', false);
             });
         },
         setCover(context, {file}) {

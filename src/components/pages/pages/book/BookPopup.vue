@@ -66,6 +66,7 @@
                             type: 'success',
                             icon: 'fa-check',
                         });
+                        this.$emit('book-saved');
                     })
                     .catch(error => {
                         console.error(error);

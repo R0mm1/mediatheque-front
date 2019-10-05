@@ -41,6 +41,7 @@
             return {
                 isPopupDisplayed: false,
                 bookPopupElementId: null,
+                bookHasBeenModified: false,
                 cols: [
                     new Column('title', 'Titre'),
                     new Column('year', 'Année'),
@@ -70,6 +71,7 @@
             },
             setBook: function (bookId) {
                 this.bookPopupElementId = bookId;
+                this.bookHasBeenModified = false;
                 this.isPopupDisplayed = true;
             },
             customActionTriggered(action, bookId) {
@@ -89,11 +91,12 @@
                 }
             },
             bookSaved: function () {
-                this.bookPopupElementId = null;
-                this.closePopup();
+                this.bookHasBeenModified = true;
             },
             closePopup: function () {
-                this.$refs.list.load();
+                if (this.bookHasBeenModified === true) {
+                    this.$refs.list.load();
+                }
                 this.isPopupDisplayed = false;
             }
         },
