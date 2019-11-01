@@ -23,8 +23,8 @@
 
             <paginate id="pagination"
                       v-if="isPaginationEnabled"
-                      :page-count="paginationPageNumber"
-                      :force-page="paginationPosition"
+                      :page-count="paginationTotalPages"
+                      :force-page="paginationCurrentPage"
                       :click-handler="setPage"
                       page-class="pagination-item"
                       prev-class="pagination-prev"
@@ -47,6 +47,7 @@
     import Column from "@/assets/ts/list/Column";
     import RowAction from "@/assets/ts/list/RowAction";
     import LeftActionBarProperties from '@/assets/ts/list/LeftActionBarProperties';
+    import PaginationHelper from "@/assets/js/paginationHelper";
 
     import ListModule from '@/assets/ts/store/ListModule';
 
@@ -64,6 +65,7 @@
     export default class List extends Vue {
         listData: {}[] = [];
         isPaginationEnabled: boolean = false;
+        paginationTotalPages?: Number;
         isLoading: boolean = true;
 
         @Prop(Array) cols!: Column[];
@@ -76,6 +78,10 @@
 
         get hasRowAction() {
             return this.rowActions.length > 0;
+        }
+
+        get paginationCurrentPage() {
+            return listModule._paginationCurrentPage;
         }
 
         queryParamsChanged() {
@@ -92,12 +98,24 @@
                 })
                 .then((data: { [index: string]: any }) => {
                     this.listData = data['hydra:member'];
+                    PaginationHelper.setRawResponse(data);
+                    let isPaginationEnabled = PaginationHelper.hasPagination();
+                    if (isPaginationEnabled) {
+                        this.paginationTotalPages = PaginationHelper.getPageNumber();
+                        this.isPaginationEnabled = true;
+                    }
                     this.isLoading = false;
                 })
                 .catch(error => {
                     console.error(error);
                 });
         }
+
+        setPage(pageNumber: Number) {
+            listModule.setPaginationCurrentPage(pageNumber);
+            this.load(false);
+        }
+
 
         created() {
             this.cols.forEach((col: Column) => {

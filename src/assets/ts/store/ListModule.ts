@@ -8,6 +8,8 @@ import Xhr from "@/assets/js/xhr";
 export default class ListModule extends VuexModule {
     _columns: { [index: string]: Column } = {};
     _searchQuery: string = '';
+    _paginationRowsPerPage: Number = 30;
+    _paginationCurrentPage: Number = 1;
 
     get columns() {
         return this._columns;
@@ -41,6 +43,10 @@ export default class ListModule extends VuexModule {
         Vue.set(this._columns, dataField, column);
     }
 
+    @Mutation setPaginationCurrentPage(currentPage: Number) {
+        this._paginationCurrentPage = currentPage;
+    }
+
     @Action({rawError: true})
     computeSearchString({getFromCache = true, apiEndpoint = ''}: { getFromCache?: boolean, apiEndpoint?: string }) {
         if (getFromCache && this._searchQuery.length > 0) {
@@ -67,6 +73,8 @@ export default class ListModule extends VuexModule {
 
             return Xhr.buildGetUrl(apiEndpoint, {
                 order: sort,
+                itemsPerPage: this._paginationRowsPerPage,
+                page: this._paginationCurrentPage,
                 ...search
             }).then(url => {
                 this.setSearchQuery(url);
