@@ -1,7 +1,7 @@
 <template>
-    <div id="app">
+    <v-app id="app">
         <router-view></router-view>
-    </div>
+    </v-app>
 </template>
 
 <script>
@@ -14,15 +14,23 @@
 <style>
     html {
         height: 100%;
+        overflow-y: hidden !important;
     }
 
     body {
         margin: 0;
         height: 100%;
-        font-family: sans-serif;
+    }
+
+    body, .v-application{
+        font-family: sans-serif !important;
     }
 
     #app {
         height: 100%;
+    }
+
+    *:not(.v-input) {
+        box-sizing: unset;
     }
 </style>

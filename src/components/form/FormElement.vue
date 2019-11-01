@@ -56,7 +56,12 @@
         .element_content {
             flex: 1;
             height: calc(100% - 4px);
+            max-width: 100%;
             margin-right: 2px;
+
+            input{
+                font-weight: normal;
+            }
 
             &.hide_content {
                 display: none;

@@ -42,9 +42,13 @@ const router = new VueRouter({
 
 //--- NOTIFICATION ---//
 import Toasted from 'vue-toasted'
+
+import vuetify from './plugins/vuetify';
+
 Vue.use(Toasted);
 
 new Vue({
     render: h => h(App),
+    vuetify,
     router: router
 }).$mount('#app');

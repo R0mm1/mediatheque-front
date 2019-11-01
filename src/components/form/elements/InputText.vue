@@ -71,6 +71,7 @@
             height: calc(100% - 6px);
             border: 1px solid #f8f3ea;
             padding: 2px;
+            background-color: white;
         }
     }
 </style>
