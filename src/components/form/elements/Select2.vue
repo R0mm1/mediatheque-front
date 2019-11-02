@@ -1,14 +1,15 @@
 <template>
     <FormElement container-custom-classes="form_element_select2" :no-label="selectDescriptor.noLabel">
         <template v-slot:element_content>
-            <v-select :items="cOptions" :searchable="cIsSearchable" v-model="dataValue" :attach="element"></v-select>
+            <v-select :items="cOptions" :searchable="cIsSearchable" v-model="dataValue" :attach="element"
+                      v-on:change="change"></v-select>
         </template>
     </FormElement>
 
 </template>
 
 <script lang="ts">
-    import {Component, Prop, Vue} from "vue-property-decorator";
+    import {Component, Emit, Prop, Vue} from "vue-property-decorator";
     import SelectDescriptor from "@/assets/ts/form/SelectDescriptor";
     import FormElement from "@/components/form/FormElement.vue";
     import LeftActionBarFormSelectDescriptor from "@/assets/ts/list/LeftActionBarFormSelectDescriptor";
@@ -46,6 +47,11 @@
             return this.selectDescriptor instanceof SelectDescriptor;
         }
 
+        @Emit()
+        change(value: any) {
+            return value;
+        }
+
         mounted() {
             this.element = this.$el.querySelector('.element_content');
         }
@@ -64,11 +70,11 @@
         .element_content {
             position: relative;
 
-            .v-menu__content, .v-select-list{
+            .v-menu__content, .v-select-list {
                 border-radius: unset !important;
             }
 
-            .v-input__slot{
+            .v-input__slot {
                 height: 2rem;
             }
 

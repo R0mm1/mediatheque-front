@@ -6,15 +6,21 @@
             <BookPopup v-if="isPopupDisplayed" :bookId="bookPopupElementId" v-on:popup-wanna-close="closePopup"
                        v-on:book-saved="bookSaved"></BookPopup>
 
-            <List ref="list" apiEndpoint="/api/books" :cols="cols"
-                  :rowActions="rowActions" v-on:custom-action-triggered="customActionTriggered"
-                  v-on:list-action-add="newBook" v-on:list-action-set="setBook"/>
+            <List ref="list" apiEndpoint="/api/books"
+                  :cols="cols" :rowActions="rowActions"
+                  :left-action-bar-properties="leftActionBarProperties"
+                  :custom-filters="cCustomFilters"
+                  v-on:custom-action-triggered="customActionTriggered"
+                  v-on:list-action-add="newBook"
+                  v-on:list-action-set="setBook"/>
 
         </template>
     </Page>
 </template>
 
 <script>
+    import Vue from 'vue';
+
     import Column from "../../../assets/ts/list/Column";
     import DataSubProperty from "../../../assets/ts/list/DataSubProperty";
     import RowAction from "../../../assets/ts/list/RowAction";
@@ -25,6 +31,12 @@
 
     import store from '../../../assets/js/store';
     import BookModule from '../../../assets/js/store/book';
+    import SelectDescriptor from "../../../assets/ts/form/SelectDescriptor";
+    import LeftActionBarElement from "../../../assets/ts/list/LeftActionBarElement";
+    import LeftActionBarProperties from "../../../assets/ts/list/LeftActionBarProperties";
+    import LeftActionBarSeparator from "../../../assets/ts/list/LeftActionBarSeparator";
+    import LeftActionBarFormSelectDescriptor from "../../../assets/ts/list/LeftActionBarFormSelectDescriptor";
+    import Filter from "../../../assets/ts/list/Filter";
 
     if (!store.state['book']) {
         store.registerModule('book', BookModule);
@@ -61,8 +73,28 @@
                         }),
                     new RowAction('delete', '', 'far fa-trash-alt')
                         .setNeedConfirm(true, 'Re-cliquez pour confirmer la suppression')
-                ]
+                ],
+                leftActionBarProperties: new LeftActionBarProperties([
+                    new LeftActionBarSeparator('Filtres'),
+                    new LeftActionBarElement(
+                        (bookType) => {
+                            let customFilter = new Filter('bookType', bookType);
+                            Vue.set(this.customFilters, customFilter.property, customFilter);
+                        },
+                        new LeftActionBarFormSelectDescriptor('bookType', {
+                            'all': 'Tous',
+                            'paper': 'Papier',
+                            'electronic': 'Epub'
+                        }).setValue('all').setFaIcon('fas fa-book')
+                    )
+                ]),
+                customFilters: {}
             }
+        },
+        computed: {
+          cCustomFilters: function(){
+              return Object.values(this.customFilters);
+          }
         },
         methods: {
             newBook: function () {

@@ -1,11 +1,12 @@
-import LeftActionBarButton from "@/assets/ts/list/LeftActionBarButton";
+import LeftActionBarElement from "@/assets/ts/list/LeftActionBarElement";
+import LeftActionBarSeparator from "@/assets/ts/list/LeftActionBarSeparator";
 
 export default class LeftActionBarProperties {
     hasAddButton: boolean = true;
 
-    customButtons: LeftActionBarButton[];
+    customElements: (LeftActionBarElement | LeftActionBarSeparator)[];
 
-    constructor(customButtons: LeftActionBarButton[] = []) {
-        this.customButtons = customButtons;
+    constructor(customElements: (LeftActionBarElement | LeftActionBarSeparator)[] = []) {
+        this.customElements = customElements;
     }
 }

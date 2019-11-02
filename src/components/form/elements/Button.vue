@@ -25,7 +25,6 @@
 
         get cCustomClasses() {
             let classes = this.buttonDescriptor.customClasses;
-            console.log(this.buttonDescriptor);
             classes.push('form_element_button2');
             return classes;
         }

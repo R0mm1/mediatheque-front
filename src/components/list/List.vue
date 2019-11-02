@@ -1,8 +1,11 @@
 <template>
 
     <span id="vueListContainer">
-        <left-action-bar id="vueListLeftActionBar" :leftActionBarProperties="leftActionBarProperties"></left-action-bar>
+
+        <left-action-bar :leftActionBarProperties="leftActionBarProperties"></left-action-bar>
+
         <div id="vueListContent" ref="vueListContent">
+
             <table id="vueList" :class="{withPagination: isPaginationEnabled}">
                 <thead>
                     <list-header :cols="cols" :hasRowAction="hasRowAction"
@@ -30,8 +33,7 @@
                       prev-class="pagination-prev"
                       next-class="pagination-next"
                       prev-text="<i class='fas fa-angle-left'></i>"
-                      next-text="<i class='fas fa-angle-right'></i>"
-            ></paginate>
+                      next-text="<i class='fas fa-angle-right'></i>"/>
         </div>
     </span>
 
@@ -47,7 +49,9 @@
     import Column from "@/assets/ts/list/Column";
     import RowAction from "@/assets/ts/list/RowAction";
     import LeftActionBarProperties from '@/assets/ts/list/LeftActionBarProperties';
+    import SelectDescriptor from '@/assets/ts/form/SelectDescriptor';
     import PaginationHelper from "@/assets/js/paginationHelper";
+    import Filter from "@/assets/ts/list/Filter";
 
     import ListModule from '@/assets/ts/store/ListModule';
 
@@ -75,6 +79,8 @@
         leftActionBarProperties!: LeftActionBarProperties;
         @Prop({type: Array, default: () => []})
         rowActions!: RowAction[];
+        @Prop({type: Array, default: () => []})
+        customFilters!: Filter[];
 
         get hasRowAction() {
             return this.rowActions.length > 0;
@@ -85,11 +91,14 @@
         }
 
         queryParamsChanged() {
-            this.load(false);
+            this.load(false, true);
         }
 
-        load(fromCache: boolean = true) {
+        load(fromCache: boolean = true, resetPagination: boolean = false) {
             this.isLoading = true;
+
+            if(resetPagination)
+                listModule.setPaginationCurrentPage(1);
 
             listModule.computeSearchString({getFromCache: fromCache, apiEndpoint: this.apiEndpoint})
                 .then(() => {
@@ -99,10 +108,9 @@
                 .then((data: { [index: string]: any }) => {
                     this.listData = data['hydra:member'];
                     PaginationHelper.setRawResponse(data);
-                    let isPaginationEnabled = PaginationHelper.hasPagination();
-                    if (isPaginationEnabled) {
+                    this.isPaginationEnabled = PaginationHelper.hasPagination();
+                    if (this.isPaginationEnabled) {
                         this.paginationTotalPages = PaginationHelper.getPageNumber();
-                        this.isPaginationEnabled = true;
                     }
                     this.isLoading = false;
                 })
@@ -116,11 +124,17 @@
             this.load(false);
         }
 
+        @Watch('customFilters')
+        onCustomFiltersChanged() {
+            listModule.setCustomFilters(this.customFilters);
+            this.load(false, true);
+        }
 
         created() {
             this.cols.forEach((col: Column) => {
                 listModule.addColumn(col);
             });
+            listModule.setCustomFilters(this.customFilters);
             this.load(false);
         }
     }
@@ -134,21 +148,6 @@
     #vueListContainer {
         display: flex;
         height: 100%;
-    }
-
-    #vueListLeftActionBar {
-        position: fixed;
-        display: flex;
-        flex-direction: column;
-        width: $leftActionBarWidth;
-        height: 100%;
-        transition: width .3s;
-        background-color: #eeeae1;
-        z-index: 10;
-
-        &:hover {
-            width: 170px;
-        }
     }
 
     #vueListContent {
@@ -206,6 +205,8 @@
 <style lang="scss">
     @import "../../assets/scss/colors";
 
+    $leftActionBarWidth: 30px;
+
     #pagination {
         margin: 0;
         padding: 0;
@@ -226,6 +227,21 @@
                 background-color: $shade1;
                 color: white;
             }
+        }
+    }
+
+    #leftActionBar {
+        position: fixed;
+        display: flex;
+        flex-direction: column;
+        width: $leftActionBarWidth;
+        height: 100%;
+        transition: width .3s;
+        background-color: #eeeae1;
+        z-index: 10;
+
+        &:hover {
+            width: 170px;
         }
     }
 </style>

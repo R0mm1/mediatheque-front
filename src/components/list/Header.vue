@@ -126,6 +126,7 @@
                 > button {
                     display: block;
                     height: 50%;
+                    padding: 0 3px;
                 }
             }
 

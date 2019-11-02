@@ -3,13 +3,19 @@ import store from "@/assets/js/store";
 import Column from "@/assets/ts/list/Column";
 import Vue from 'vue';
 import Xhr from "@/assets/js/xhr";
+import Filter from "@/assets/ts/list/Filter";
 
 @Module({dynamic: true, name: 'list', store: store, namespaced: true})
 export default class ListModule extends VuexModule {
     _columns: { [index: string]: Column } = {};
-    _searchQuery: string = '';
+
     _paginationRowsPerPage: Number = 30;
     _paginationCurrentPage: Number = 1;
+
+    _customFilters: Filter[] = [];
+
+    _searchQuery: string = '';
+
 
     get columns() {
         return this._columns;
@@ -47,6 +53,10 @@ export default class ListModule extends VuexModule {
         this._paginationCurrentPage = currentPage;
     }
 
+    @Mutation setCustomFilters(customFilters: Filter[]) {
+        this._customFilters = customFilters;
+    }
+
     @Action({rawError: true})
     computeSearchString({getFromCache = true, apiEndpoint = ''}: { getFromCache?: boolean, apiEndpoint?: string }) {
         if (getFromCache && this._searchQuery.length > 0) {
@@ -71,11 +81,17 @@ export default class ListModule extends VuexModule {
                 }
             });
 
+            const customFilters: { [index: string]: string } = {};
+            this._customFilters.forEach(customFilter => {
+                customFilters[customFilter.property] = customFilter.value;
+            });
+
             return Xhr.buildGetUrl(apiEndpoint, {
                 order: sort,
                 itemsPerPage: this._paginationRowsPerPage,
                 page: this._paginationCurrentPage,
-                ...search
+                ...search,
+                ...customFilters
             }).then(url => {
                 this.setSearchQuery(url);
                 return Promise.resolve(url);
