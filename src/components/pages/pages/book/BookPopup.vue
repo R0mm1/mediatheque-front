@@ -1,8 +1,8 @@
 <template>
     <Popup id="bookPopup" :loaded="loaded">
         <template v-slot:popup_header>
-            <InputText placeholder="Titre" name="title" :value="title" custom-classes="input_title"
-                       :no-label="true" v-on:input-text-changed="dataChanged"></InputText>
+            <InputText placeholder="Titre" name="title" v-model="title" custom-classes="input_title"
+                       :no-label="true"></InputText>
 
             <TopButtonBar v-on:tab-button-clicked="setTab" v-on:popup-wanna-close="$emit('popup-wanna-close')"
                           :buttons="tabs" default-tab="main">
@@ -10,7 +10,7 @@
         </template>
 
         <template v-slot:popup_body>
-            <MainTab v-if="currentTab === 'main'"></MainTab>
+            <MainTab v-if="currentTab === 'main'" :book-store="bookStore"></MainTab>
             <SocialTab v-if="currentTab === 'social'"></SocialTab>
         </template>
 
@@ -23,20 +23,27 @@
 </template>
 
 <script>
+    import BookService from "../../../../assets/ts/service/BookService";
+
     const config = require('../../../../../mediatheque');
+
+    import {getModule} from "vuex-module-decorators";
 
     import Popup from '../../../popup/Popup';
     import TopButtonBar, {TopButtonBarElement} from "../../../popup/TopButtonBar";
     import InputText from '../../../form/elements/InputText';
     import InputButton from '../../../form/elements/InputButton';
 
-    import {mapActions} from 'vuex';
-    import store from '../../../../assets/js/store';
-    import BookModule from '../../../../assets/js/store/book';
+    // import {mapActions} from 'vuex';
+    // import store from '../../../../assets/js/store';
+    // import BookModule from '../../../../assets/js/store/book';
+    //
+    // if (!store.state['book']) {
+    //     store.registerModule('book', BookModule);
+    // }
 
-    if (!store.state['book']) {
-        store.registerModule('book', BookModule);
-    }
+    import bookElectronicModule from "../../../../assets/ts/store/book/BookElectronicModule";
+    import bookPaperModule from "../../../../assets/ts/store/book/BookPaperModule";
 
     export default {
         name: "BookPopup",
@@ -46,18 +53,18 @@
             InputButton, InputText, Popup, TopButtonBar
         },
         props: {
-            bookId: {default: null}
+            bookId: {default: null},
+            bookType: {type: String, default: BookService.bookPaper}
         },
         data() {
             return {
                 loaded: false,
-                currentTab: 'main'
+                currentTab: 'main',
+                bookModule: undefined,
+                bookStore: undefined
             }
         },
         methods: {
-            dataChanged(name, value) {
-                this.$store.commit('book/setProperty', {propertyName: name, value: value});
-            },
             save() {
                 this.$store.dispatch('book/saveBook')
                     .then(() => {
@@ -76,40 +83,51 @@
             setTab(newTab) {
                 this.currentTab = newTab;
             },
-            ...mapActions([
-                'book/loadBook'
-            ]),
             reloadBook(bookId) {
+                this.checkStore();
                 this.loaded = false;
 
                 if (typeof bookId === 'undefined') bookId = this.bookId;
                 if (bookId) {
-                    this['book/loadBook'](bookId)
-                        .then(() => {
-                            this.loaded = true;
-                        });
+                    this.bookStore.get(bookId).then(() => {
+                        this.loaded = true;
+                    });
                 } else {
                     this.$store.commit('book/unload');
                     this.loaded = true;
                 }
+            },
+            checkStore() {
+                //Change the store according to the book type
+                if (typeof this.bookType !== 'string' ||
+                    (this.bookType !== BookService.bookPaper && this.bookType !== BookService.bookElectronic))
+                    throw "Invalid book type provided";
+
+                this.bookStore = this.bookType === BookService.bookPaper ? bookPaperModule : bookElectronicModule;
+                console.log(this.bookStore);
             }
         },
         computed: {
-            title() {
-                return this.$store.getters['book/getProperty']('title');
+            title: {
+                get() {
+                    return this.bookStore.book.title;
+                },
+                set(title) {
+                    this.bookStore.setTitle(title);
+                }
             },
             id() {
-                return this.$store.getters['book/getProperty']('id');
+                return this.bookStore.book.id;
             },
             isModified() {
-                return this.$store.getters['book/getFlag']('isModified');
+                return this.bookStore.flagService.flags.isModified;
             },
             tabs() {
                 let tabs = [
                     new TopButtonBarElement('fas fa-book', 'main')
                 ];
 
-                let isSocialActive = (this.id.toString().length > 0);
+                let isSocialActive = (typeof this.id !== 'undefined' && this.id.toString().length > 0);
                 tabs.push(new TopButtonBarElement('fas fa-comment', 'social', isSocialActive));
 
                 return tabs;
@@ -118,12 +136,15 @@
         watch: {
             bookId(newValue) {
                 this.reloadBook(newValue);
+            },
+            bookType(bookType) {
+                this.checkStore();
             }
         },
         created() {
             this.reloadBook();
         },
-        store
+        // store
     }
 </script>
 

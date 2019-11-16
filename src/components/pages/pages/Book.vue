@@ -3,7 +3,8 @@
 
         <template v-slot:med_page_body>
 
-            <BookPopup v-if="isPopupDisplayed" :bookId="bookPopupElementId" v-on:popup-wanna-close="closePopup"
+            <BookPopup v-if="isPopupDisplayed" :bookId="bookPopupElementId" :bookType="bookPopupElementType"
+                       v-on:popup-wanna-close="closePopup"
                        v-on:book-saved="bookSaved"></BookPopup>
 
             <List ref="list" apiEndpoint="/api/books"
@@ -53,6 +54,7 @@
             return {
                 isPopupDisplayed: false,
                 bookPopupElementId: null,
+                bookPopupElementType: null,
                 bookHasBeenModified: false,
                 cols: [
                     new Column('title', 'Titre'),
@@ -101,8 +103,10 @@
                 this.bookPopupElementId = null;
                 this.isPopupDisplayed = true;
             },
-            setBook: function (bookId) {
-                this.bookPopupElementId = bookId;
+            setBook: function (selectedBook) {
+                console.log(selectedBook['@type']);
+                this.bookPopupElementId = selectedBook.id;
+                this.bookPopupElementType = selectedBook['@type'];
                 this.bookHasBeenModified = false;
                 this.isPopupDisplayed = true;
             },

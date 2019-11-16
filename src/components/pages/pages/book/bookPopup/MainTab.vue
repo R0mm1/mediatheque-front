@@ -6,7 +6,7 @@
                 <GroupSummary class="groupSummary"></GroupSummary>
                 <GroupReferences></GroupReferences>
             </div>
-            <GroupInformation class="groupInformation"></GroupInformation>
+            <GroupInformation class="groupInformation" :book-store="bookStore"></GroupInformation>
         </template>
     </Tab>
 </template>
@@ -21,7 +21,8 @@
 
     export default {
         name: "MainTab",
-        components: {Tab, GroupReferences, GroupSummary, GroupPicture, GroupInformation}
+        components: {Tab, GroupReferences, GroupSummary, GroupPicture, GroupInformation},
+        props: {bookStore: {type: Object, required: true}}
     }
 </script>
 

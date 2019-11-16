@@ -16,7 +16,7 @@
                 <tbody>
                     <template v-if="!isLoading">
                         <Row v-for="dataRow in listData" :key="dataRow.id" :dataRow="dataRow" :cols="cols"
-                             :rowActions="rowActions" v-on:click.native="$emit('list-action-set', dataRow.id)"></Row>
+                             :rowActions="rowActions" v-on:click.native="$emit('list-action-set', dataRow)"></Row>
                     </template>
                     <template v-else>
                         <Loader class="list-loader"></Loader>

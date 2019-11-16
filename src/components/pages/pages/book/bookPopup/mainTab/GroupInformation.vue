@@ -4,37 +4,34 @@
             Informations
         </template>
         <template v-slot:group_content>
-            <Entities name="authors" label="Auteurs" :entities="cAuthors" :entity-fields="['firstname', 'lastname']"
+            <Entities name="authors" label="Auteurs" :entities="authors" :entity-fields="['firstname', 'lastname']"
                       entity-u-r-i="/api/authors" search-param="fullname"
                       search-field-placeholder="Rechercher un auteur"
                       :form-creation-validation-action="createAuthorFromForm" form-creation-title="Nouvel auteur"
                       v-on:entity-removed="authorRemoved" v-on:entity-added="authorAdded">
 
                 <template v-slot:form_creation_body>
-                    <InputText ref="authorFirstname" name="authorFirstname" label="Prénom"></InputText>
-                    <InputText ref="authorLastname" name="authorLastname" label="Nom"></InputText>
+                    <InputText v-model="newAuthor.firstname" name="authorFirstname" label="Prénom"></InputText>
+                    <InputText v-model="newAuthor.lastname" name="authorLastname" label="Nom"></InputText>
                 </template>
 
             </Entities>
 
-            <InputText name="language" label="Langue" :value="cLanguage"
-                       v-on:input-text-changed="propertyChanged"></InputText>
-            <InputText name="year" label="Année" :value="cYear"
-                       v-on:input-text-changed="propertyChanged"></InputText>
-            <InputText name="pageCount" label="Nombre de pages" :value="cPageCount"
-                       v-on:input-text-changed="propertyChanged"></InputText>
-            <InputText name="isbn" label="Isbn" :value="cIsbn"
-                       v-on:input-text-changed="propertyChanged"></InputText>
+            <InputText name="language" label="Langue" v-model="language"></InputText>
+            <InputText name="year" label="Année" v-model="year"></InputText>
 
-            <BooleanSwitch name="isElectronic" label="Livre électronique" :value="cIsElectronic"
+            <InputText name="pageCount" label="Nombre de pages" v-model="pageCount"></InputText>
+            <InputText name="isbn" label="Isbn" v-model="isbn"></InputText>
+
+            <BooleanSwitch name="isElectronic" label="Livre électronique" :value="isElectronic"
                            v-on:boolean-switch-state-changed="setBookType"></BooleanSwitch>
 
             <Select name="owner" label="Propriétaire" :options-source="getUserListPromise" :value="cOwner"
-                    v-if="!cIsElectronic" v-on:select-changed="setOwner"></Select>
+                    v-if="!isElectronic" v-on:select-changed="setOwner"></Select>
 
             <Files name="electronicBook" label="Livre" :max-files="Number(1)" :on-file-added="setElectronicBook"
                    :on-file-removed="removeElectronicBook" :files="cElectronicFile" :download-action="downloadEbook"
-                   v-if="cIsElectronic"></Files>
+                   v-if="isElectronic"></Files>
 
         </template>
     </Group>
@@ -48,63 +45,50 @@
     import Files from "../../../../../form/elements/Files";
     import Xhr from "../../../../../../assets/js/xhr";
 
-    import store from "../../../../../../assets/js/store";
-    import BookModule from "../../../../../../assets/js/store/book";
-    import AuthorModule from "../../../../../../assets/js/store/author";
     import Select from "../../../../../form/elements/Select";
+    import BookService from "../../../../../../assets/ts/service/BookService";
+    import MedFile from "../../../../../../assets/js/medFile";
 
-    if (!store.state['book']) {
-        store.registerModule('book', BookModule);
-    }
-
-    if (!store.state['author']) {
-        store.registerModule('author', AuthorModule);
-    }
+    import authorModule from "../../../../../../assets/ts/store/AuthorModule"
 
     export default {
         name: "GroupInformation",
         components: {Select, BooleanSwitch, Entities, InputText, Group, Files},
+        props: {bookStore: {type: Object, required: true}},
+        data() {
+            return {
+                newAuthor: {
+                    firstname: undefined,
+                    lastname: undefined
+                }
+            }
+        },
         methods: {
-            propertyChanged(field, value) {
-                this.$store.commit('book/setProperty', {
-                    propertyName: field,
-                    value: value
-                });
-            },
             authorRemoved(author) {
-                this.$store.commit('book/removeAuthor', author);
+                this.bookStore.removeAuthor(author);
             },
             authorAdded(author) {
-                this.$store.commit('book/addAuthor', author);
+                this.bookStore.addAuthor(author);
             },
             createAuthorFromForm() {
-                this.$store.commit('author/setProperty', {
-                    propertyName: 'firstname',
-                    value: this.$refs.authorFirstname.getValue()
+                authorModule.new();
+                authorModule.setFirstname(this.newAuthor.firstname);
+                authorModule.setLastname(this.newAuthor.lastname);
+                authorModule.save().then(author => {
+                    console.log(author);
+                    this.authorAdded(author);
+                    this.newAuthor.firstname = undefined;
+                    this.newAuthor.lastname = undefined;
                 });
-                this.$store.commit('author/setProperty', {
-                    propertyName: 'lastname',
-                    value: this.$refs.authorLastname.getValue()
-                });
-
-                this.$store.dispatch('author/save')
-                    .then(author => {
-                        this.authorAdded(author);
-                        this.$refs.authorFirstname.clear();
-                        this.$refs.authorLastname.clear();
-                    });
             },
             setElectronicBook(file) {
-                this.$store.commit('book/setProperty', {
-                    propertyName: 'electronicBook',
-                    value: file
-                });
+                this.bookStore.linkNewFile(file);
             },
             removeElectronicBook() {
-                this.$store.commit('book/deleteRelatedEbook');
+                this.bookStore.unlinkBookFile();
             },
             setOwner(userId) {
-                this.$store.commit('book/setOwner', userId);
+                // this.$store.commit('book/setOwner', userId);
             },
             getUserListPromise() {
                 return Xhr.buildGetUrl('/api/users')
@@ -120,40 +104,66 @@
                     })
             },
             setBookType(field, isElectronic) {
-                this.$store.commit('book/setFlag', {
-                    flagName: 'isElectronic',
-                    value: isElectronic
-                });
+                // this.$store.commit('book/setFlag', {
+                //     flagName: 'isElectronic',
+                //     value: isElectronic
+                // });
             },
             downloadEbook() {
-                this.$store.dispatch('book/downloadEbook');
+                this.bookStore.downloadEbook();
             }
         },
         computed: {
-            cLanguage() {
-                return this.$store.getters['book/getProperty']('language');
+            language: {
+                get() {
+                    return this.bookStore.book.language;
+                },
+                set(language) {
+                    this.bookStore.setLanguage(language);
+                }
             },
-            cYear() {
-                return this.$store.getters['book/getProperty']('year');
+            year: {
+                get() {
+                    return this.bookStore.book.year;
+                },
+                set(year) {
+                    this.bookStore.setYear(year);
+                }
             },
-            cPageCount() {
-                return this.$store.getters['book/getProperty']('pageCount');
+            pageCount: {
+                get() {
+                    return this.bookStore.book.pageCount;
+                },
+                set(pageCount) {
+                    this.bookStore.setPageCount(pageCount);
+                }
             },
-            cIsbn() {
-                return this.$store.getters['book/getProperty']('isbn');
+            isbn: {
+                get() {
+                    return this.bookStore.book.isbn;
+                },
+                set(isbn) {
+                    this.bookStore.setIsbn(isbn);
+                }
             },
-            cAuthors() {
-                return this.$store.getters['book/getProperty']('authors')
+            isElectronic() {
+                return this.bookStore.book['@type'] === BookService.bookElectronic;
             },
-            cIsElectronic() {
-                return this.$store.getters['book/getFlag']('isElectronic');
+            authors() {
+                return this.bookStore.book.authors;
             },
             cElectronicFile() {
                 let filesArray = [];
-                let file = this.$store.getters['book/getProperty']('electronicBook');
-                if (file) {
-                    filesArray.push(file);
+
+                if (typeof this.bookStore.book.bookFile === 'object') {
+                    filesArray.push(new MedFile(
+                        this.bookStore.book.bookFile.path,
+                        this.bookStore.book.bookFile.path,
+                        this.bookStore.book.bookFile.id,
+                        false
+                    ));
                 }
+
                 return filesArray;
             },
             cOwner() {
@@ -164,8 +174,7 @@
                 }
                 return null;
             }
-        },
-        store
+        }
     }
 </script>
 
