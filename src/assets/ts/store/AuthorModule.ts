@@ -5,7 +5,8 @@ import store from "@/assets/js/store";
 import FlagService from "@/assets/ts/service/FlagService";
 import EntityModuleFlagInterface from "@/assets/ts/store/EntityModuleFlagInterface";
 import Xhr from "@/assets/js/xhr";
-import EntityModuleService from "@/assets/ts/service/EntityModuleService";
+import EntityProxyService from "@/assets/ts/service/EntityProxyService";
+import HistoryService from "@/assets/ts/service/HistoryService";
 
 @Module({dynamic: true, name: 'author', store: store, namespaced: true})
 class AuthorModule extends VuexModule implements EntityModuleInterface<AuthorEntity> {
@@ -15,43 +16,37 @@ class AuthorModule extends VuexModule implements EntityModuleInterface<AuthorEnt
 
     author: AuthorEntity = this.baseAuthor;
 
-    entityModuleService: EntityModuleService = new EntityModuleService();
-
     flagService = new FlagService<EntityModuleFlagInterface>({
         isModified: false,
         readyToSave: true
     });
 
+    proxy = new EntityProxyService(this.flagService, new HistoryService());
+
     @Mutation new() {
-        this.author = this.baseAuthor;
+        this.author = new Proxy(this.baseAuthor, this.proxy);
         this.flagService.reset();
     }
 
     @Mutation set(entity: AuthorEntity): void {
-        this.author = entity;
+        this.author = new Proxy(entity, this.proxy);
     }
 
     @Mutation setFirstname(firstname: string) {
-        ({
-            entity: this.author,
-            flagService: this.flagService
-        } = this.entityModuleService.propertyUpdate<AuthorEntity>(this.author, this.flagService, 'firstname', firstname));
+        this.author.firstname = firstname;
     }
 
     @Mutation setLastname(lastname: string) {
-        ({
-            entity: this.author,
-            flagService: this.flagService
-        } = this.entityModuleService.propertyUpdate<AuthorEntity>(this.author, this.flagService, 'lastname', lastname));
+        this.author.lastname = lastname;
     }
 
-    @Action get(id: number): Promise<AuthorEntity | undefined> {
-        return Xhr.buildGetUrl(this.baseUrl + id)
+    @Action({rawError: true}) get(id: number): Promise<AuthorEntity | undefined> {
+        return Xhr.buildGetUrl(this.baseUrl + '/' + id)
             .then(url => Xhr.fetch(url, {
                 method: 'GET'
             }))
             .then(result => {
-                this.author = result;
+                this.set(result);
                 return Promise.resolve(this.author);
             });
     }

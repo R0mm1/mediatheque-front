@@ -3,7 +3,7 @@
         <template v-slot:popup_header>
             <div class="header_separator"></div>
             <InputButton v-on:click.native="$emit('popup-wanna-close')"
-                         :label-custom-classes="'fas fa-times'" :custom-classes="['button_close']"></InputButton>
+                         :label-custom-classes="'fas fa-times'" :custom-classes="['button_close']"/>
         </template>
 
         <template v-slot:popup_body>
@@ -13,35 +13,29 @@
                 </template>
 
                 <template v-slot:group_content>
-                    <InputText name="firstname" label="Prénom" :value="cFirstname"
-                               v-on:input-text-changed="propertyChanged"></InputText>
-                    <InputText name="lastname" label="Nom" :value="cLastname"
-                               v-on:input-text-changed="propertyChanged"></InputText>
+                    <InputText name="firstname" label="Prénom" v-model="firstname"/>
+                    <InputText name="lastname" label="Nom" v-model="lastname"/>
                 </template>
             </Group>
         </template>
 
         <template v-slot:popup_footer>
             <InputButton name="save" value="Enregistrer" type="submit" v-on:click.native="save"
-                         v-if="cIsModified"></InputButton>
+                         v-if="isModified"/>
         </template>
 
     </Popup>
 </template>
 
 <script>
+    const config = require('../../../../../mediatheque');
+
     import Popup from "../../../popup/Popup";
     import InputText from '../../../form/elements/InputText';
     import InputButton from '../../../form/elements/InputButton';
     import Group from "../../../popup/Group";
 
-    import {mapActions} from 'vuex';
-    import store from '../../../../assets/js/store';
-    import AuthorModule from '../../../../assets/js/store/author';
-
-    if (!store.state['author']) {
-        store.registerModule('author', AuthorModule);
-    }
+    import authorModule from "../../../../assets/ts/store/AuthorModule";
 
     export default {
         name: "AuthorPopup",
@@ -55,17 +49,16 @@
             }
         },
         methods: {
-            ...mapActions({
-                loadAuthor: 'author/load'
-            }),
-            propertyChanged(field, value) {
-                this.$store.commit('author/setProperty', {
-                    propertyName: field,
-                    value: value
-                });
-            },
             save() {
-                this.$store.dispatch('author/save')
+                authorModule.save()
+                    .then(() => {
+                        this.$toasted.show("L'auteur a été sauvegardé", {
+                            ...config.default.notification_settings,
+                            type: 'success',
+                            icon: 'fa-check',
+                        });
+                        this.$emit('author-saved');
+                    })
                     .catch(error => {
                         console.error(error);
                         alert("Une erreur s'est produite et l'auteur n'a pas pu être sauvegardé");
@@ -73,28 +66,40 @@
             },
         },
         computed: {
-            cFirstname() {
-                return this.$store.getters['author/getProperty']('firstname');
+            firstname: {
+                get() {
+                    return authorModule.author.firstname;
+                },
+                set(firstname) {
+                    authorModule.setFirstname(firstname);
+                }
             },
-            cLastname() {
-                return this.$store.getters['author/getProperty']('lastname');
+            lastname: {
+                get() {
+                    return authorModule.author.lastname;
+                },
+                set(lastname) {
+                    authorModule.setLastname(lastname);
+                }
             },
-            cIsModified() {
-                return this.$store.getters['author/getFlag']('isModified');
+            isModified() {
+                return authorModule.flagService.flags.isModified;
             }
         },
         watch: {
             authorId(newAuthorId) {
+                console.log(newAuthorId);
                 if (newAuthorId) {
-                    this.loadAuthor(newAuthorId);
+                    authorModule.get(newAuthorId);
                 }
             }
         },
         created() {
             if (this.authorId) {
-                this.loadAuthor(this.authorId);
+                console.log(this.authorId);
+                authorModule.get(this.authorId);
             } else {
-                this.$store.commit('author/init');
+                authorModule.new();
             }
             this.loaded = true;
         }

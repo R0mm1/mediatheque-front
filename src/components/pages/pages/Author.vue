@@ -17,14 +17,8 @@
     import Page from './../Page';
     import List from './../../list/List';
 
-    import store from '../../../assets/js/store';
-    import AuthorModule from '../../../assets/js/store/author';
     import AuthorPopup from "./author/AuthorPopup";
     import Column from "../../../assets/ts/list/Column";
-
-    if (!store.state['author']) {
-        store.registerModule('author', AuthorModule);
-    }
 
     export default {
         name: "Author",
@@ -44,8 +38,8 @@
             }
         },
         methods: {
-            setAuthor(authorId) {
-                this.authorPopupElementId = authorId;
+            setAuthor(author) {
+                this.authorPopupElementId = author.id;
                 this.isPopupDisplayed = true;
             },
             newAuthor() {
@@ -56,8 +50,7 @@
                 this.$refs.list.load();
                 this.isPopupDisplayed = false;
             }
-        },
-        store
+        }
     }
 </script>
 

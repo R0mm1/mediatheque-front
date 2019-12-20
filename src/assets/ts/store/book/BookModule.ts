@@ -9,10 +9,8 @@ import Xhr from "@/assets/js/xhr";
 import BookService from "@/assets/ts/service/BookService";
 import FlagService from "@/assets/ts/service/FlagService";
 import EntityModuleFlagInterface from "@/assets/ts/store/EntityModuleFlagInterface";
-import EntityModuleService from "@/assets/ts/service/EntityModuleService";
 import EventService from "@/assets/ts/service/EventService";
 import HistoryService from "@/assets/ts/service/HistoryService";
-import {parse} from "@typescript-eslint/parser";
 
 export abstract class BookModule extends VuexModule {
 
