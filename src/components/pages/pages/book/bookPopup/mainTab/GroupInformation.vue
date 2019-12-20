@@ -11,27 +11,24 @@
                       v-on:entity-removed="authorRemoved" v-on:entity-added="authorAdded">
 
                 <template v-slot:form_creation_body>
-                    <InputText v-model="newAuthor.firstname" name="authorFirstname" label="Prénom"></InputText>
-                    <InputText v-model="newAuthor.lastname" name="authorLastname" label="Nom"></InputText>
+                    <InputText v-model="newAuthor.firstname" name="authorFirstname" label="Prénom"/>
+                    <InputText v-model="newAuthor.lastname" name="authorLastname" label="Nom"/>
                 </template>
 
             </Entities>
 
-            <InputText name="language" label="Langue" v-model="language"></InputText>
-            <InputText name="year" label="Année" v-model="year"></InputText>
+            <InputText name="language" label="Langue" v-model="language"/>
+            <InputText name="year" label="Année" v-model="year"/>
 
-            <InputText name="pageCount" label="Nombre de pages" v-model="pageCount"></InputText>
-            <InputText name="isbn" label="Isbn" v-model="isbn"></InputText>
+            <InputText name="pageCount" label="Nombre de pages" v-model="pageCount"/>
+            <InputText name="isbn" label="Isbn" v-model="isbn"/>
 
-            <BooleanSwitch name="isElectronic" label="Livre électronique" :value="isElectronic"
-                           v-on:boolean-switch-state-changed="setBookType"></BooleanSwitch>
-
-            <Select name="owner" label="Propriétaire" :options-source="getUserListPromise" :value="cOwner"
-                    v-if="!isElectronic" v-on:select-changed="setOwner"></Select>
+            <Select name="owner" label="Propriétaire" :options-source="getUserListPromise" :value="ownerId"
+                    v-if="!isElectronic" v-on:select-changed="setOwner"/>
 
             <Files name="electronicBook" label="Livre" :max-files="Number(1)" :on-file-added="setElectronicBook"
                    :on-file-removed="removeElectronicBook" :files="cElectronicFile" :download-action="downloadEbook"
-                   v-if="isElectronic"></Files>
+                   v-if="isElectronic"/>
 
         </template>
     </Group>
@@ -41,7 +38,6 @@
     import Group from "../../../../../popup/Group";
     import InputText from "../../../../../form/elements/InputText";
     import Entities from "../../../../../form/elements/Entities";
-    import BooleanSwitch from "../../../../../form/elements/BooleanSwitch";
     import Files from "../../../../../form/elements/Files";
     import Xhr from "../../../../../../assets/js/xhr";
 
@@ -53,7 +49,7 @@
 
     export default {
         name: "GroupInformation",
-        components: {Select, BooleanSwitch, Entities, InputText, Group, Files},
+        components: {Select, Entities, InputText, Group, Files},
         props: {bookStore: {type: Object, required: true}},
         data() {
             return {
@@ -75,7 +71,6 @@
                 authorModule.setFirstname(this.newAuthor.firstname);
                 authorModule.setLastname(this.newAuthor.lastname);
                 authorModule.save().then(author => {
-                    console.log(author);
                     this.authorAdded(author);
                     this.newAuthor.firstname = undefined;
                     this.newAuthor.lastname = undefined;
@@ -88,7 +83,7 @@
                 this.bookStore.unlinkBookFile();
             },
             setOwner(userId) {
-                // this.$store.commit('book/setOwner', userId);
+                this.bookStore.setOwner(parseInt(userId));
             },
             getUserListPromise() {
                 return Xhr.buildGetUrl('/api/users')
@@ -104,10 +99,7 @@
                     })
             },
             setBookType(field, isElectronic) {
-                // this.$store.commit('book/setFlag', {
-                //     flagName: 'isElectronic',
-                //     value: isElectronic
-                // });
+                this.$parent.$parent.$emit('book-type-changed', isElectronic);
             },
             downloadEbook() {
                 this.bookStore.downloadEbook();
@@ -155,7 +147,7 @@
             cElectronicFile() {
                 let filesArray = [];
 
-                if (typeof this.bookStore.book.bookFile === 'object') {
+                if (typeof this.bookStore.book.bookFile === 'object' && this.bookStore.book.bookFile !== null) {
                     filesArray.push(new MedFile(
                         this.bookStore.book.bookFile.path,
                         this.bookStore.book.bookFile.path,
@@ -166,10 +158,14 @@
 
                 return filesArray;
             },
-            cOwner() {
-                let owner = this.$store.getters['book/getProperty']('owner');
+            ownerId() {
+                const owner = this.bookStore.book.owner;
 
-                if (typeof owner === 'object' && typeof owner.id !== 'undefined') {
+                if (owner === null) {
+                    return null;
+                } else if (typeof owner === 'string') {
+                    return owner.split('/').pop().split('=').pop();
+                } else if (typeof owner === 'object') {
                     return owner.id;
                 }
                 return null;

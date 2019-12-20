@@ -10,7 +10,7 @@
         </template>
 
         <template v-slot:popup_body>
-            <MainTab v-if="currentTab === 'main'" :book-store="bookStore"></MainTab>
+            <MainTab v-if="currentTab === 'main'" :book-store="bookStore" v-on:book-type-changed="changeBookType"/>
             <SocialTab v-if="currentTab === 'social'"></SocialTab>
         </template>
 
@@ -27,23 +27,15 @@
 
     const config = require('../../../../../mediatheque');
 
-    import {getModule} from "vuex-module-decorators";
-
     import Popup from '../../../popup/Popup';
     import TopButtonBar, {TopButtonBarElement} from "../../../popup/TopButtonBar";
     import InputText from '../../../form/elements/InputText';
     import InputButton from '../../../form/elements/InputButton';
 
-    // import {mapActions} from 'vuex';
-    // import store from '../../../../assets/js/store';
-    // import BookModule from '../../../../assets/js/store/book';
-    //
-    // if (!store.state['book']) {
-    //     store.registerModule('book', BookModule);
-    // }
-
     import bookElectronicModule from "../../../../assets/ts/store/book/BookElectronicModule";
     import bookPaperModule from "../../../../assets/ts/store/book/BookPaperModule";
+    import bookPopupModule from "../../../../assets/ts/store/book/BookPopupModule";
+    import HistoryService from "../../../../assets/ts/service/HistoryService";
 
     export default {
         name: "BookPopup",
@@ -60,13 +52,14 @@
             return {
                 loaded: false,
                 currentTab: 'main',
-                bookModule: undefined,
-                bookStore: undefined
+                //The book store in use, depending on the the book type
+                bookStore: undefined,
+                bookTypeChanged: false
             }
         },
         methods: {
             save() {
-                this.$store.dispatch('book/saveBook')
+                this.bookStore.save(this.bookTypeChanged)
                     .then(() => {
                         this.$toasted.show('Le livre a été sauvegardé', {
                             ...config.default.notification_settings,
@@ -84,6 +77,7 @@
                 this.currentTab = newTab;
             },
             reloadBook(bookId) {
+                bookPopupModule.init();
                 this.checkStore();
                 this.loaded = false;
 
@@ -93,7 +87,7 @@
                         this.loaded = true;
                     });
                 } else {
-                    this.$store.commit('book/unload');
+                    this.bookStore.init();
                     this.loaded = true;
                 }
             },
@@ -104,7 +98,27 @@
                     throw "Invalid book type provided";
 
                 this.bookStore = this.bookType === BookService.bookPaper ? bookPaperModule : bookElectronicModule;
-                console.log(this.bookStore);
+            },
+            changeBookType(isElectronic) {
+                if (!bookPopupModule.hasOrigin) {
+                    bookPopupModule.setOrigin(this.bookStore.book);
+                }
+
+                const isOriginElectronic = (typeof bookPopupModule.origin.hasBookFile !== 'undefined');
+                this.bookTypeChanged = (isOriginElectronic && !isElectronic);
+
+                bookPopupModule.setBookSnapshot(JSON.parse(JSON.stringify(this.bookStore.book)));
+
+                const historyService = new HistoryService();
+                historyService.history = this.bookStore.historyService.history;
+
+                bookPopupModule.setHistoryService(historyService);
+
+                const bookStore = isElectronic ? bookElectronicModule : bookPaperModule;
+                bookStore.set(bookPopupModule.otherTypeFromSnapshot());
+                bookStore.setHistoryService(historyService);
+
+                this.bookStore = bookStore;
             }
         },
         computed: {
@@ -137,14 +151,13 @@
             bookId(newValue) {
                 this.reloadBook(newValue);
             },
-            bookType(bookType) {
+            bookType() {
                 this.checkStore();
             }
         },
         created() {
             this.reloadBook();
-        },
-        // store
+        }
     }
 </script>
 

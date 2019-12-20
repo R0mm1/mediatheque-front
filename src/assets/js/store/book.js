@@ -218,7 +218,7 @@ const BookModule = {
         downloadEbook(context) {
             let file = context.state.book.electronicBook;
             if (file instanceof MedFile) {
-                Xhr.buildGetUrl('/api/electronic_books/' + file.id)
+                Xhr.buildGetUrl('/api/book_files/' + file.id)
                     .then(url => {
                         return Xhr.fetch(url, {
                             method: 'GET'

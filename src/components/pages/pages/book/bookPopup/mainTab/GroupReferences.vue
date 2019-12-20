@@ -12,7 +12,7 @@
         <template v-slot:group_content>
             <Accordion v-if="!groupFormDisplayed" :blocs="blocs">
                 <SimpleList v-for="bloc in blocs" :slot="bloc.slotId" :key="bloc.slotId"
-                            :elements="blocsRows[bloc.slotId]"></SimpleList>
+                            :elements="blocsRows[bloc.slotId]"/>
             </Accordion>
 
             <div v-if="groupFormDisplayed" class="group_manage">
@@ -20,7 +20,7 @@
                     <template v-slot:form_title>Ajouter à un groupe existant</template>
                     <template v-slot:form_body>
                         <Select ref="selectExistingGroups" :options-source="getExistingGroupsPromise"
-                                label="Groupes"></Select>
+                                label="Groupes"/>
                     </template>
                     <template v-slot:action_cancel><span></span></template>
                 </FormContainer>
@@ -29,7 +29,7 @@
                                :cancelAction="toggleDisplayFormData">
                     <template v-slot:form_title>Créer un nouveau groupe</template>
                     <template v-slot:form_body>
-                        <InputText ref="newGroupComment" label="Commentaire"></InputText>
+                        <InputText v-model="newGroupComment" label="Commentaire"/>
                     </template>
                 </FormContainer>
             </div>
@@ -44,35 +44,43 @@
     import Accordion, {AccordionBloc} from "../../../../../widgets/Accordion";
     import SimpleList, {Element} from "../../../../../widgets/SimpleList";
 
-    import Xhr from "../../../../../../assets/js/xhr";
-
-    import store from "../../../../../../assets/js/store";
-    import BookModule from "../../../../../../assets/js/store/book";
     import FormContainer from "../../../../../form/FormContainer";
     import InputText from "../../../../../form/elements/InputText";
     import Select from "../../../../../form/elements/Select";
 
-    if (!store.state['book']) {
-        store.registerModule('book', BookModule);
-    }
+    import groupModule from "../../../../../../assets/ts/store/GroupModule";
+
+    import EventService from "../../../../../../assets/ts/service/EventService";
+    import {BookModule} from "../../../../../../assets/ts/store/book/BookModule";
+
+    const eventService = EventService.getService();
 
     export default {
         name: "GroupReferences",
         components: {Select, InputText, FormContainer, SimpleList, Accordion, InputButton, Group},
         props: {
-            bookId: {default: null}
+            bookStore: {required: true}
         },
         data() {
             return {
                 blocs: [],
                 blocsRows: {},
                 groupFormDisplayed: false,
-                cacheGroupList: {}
+                cacheGroupList: {},
+                relatedGroups: []
             }
         },
         computed: {
-            cBookId() {
-                return this.$store.getters['book/getProperty']('id');
+            bookId() {
+                return this.bookStore.book.id;
+            },
+            newGroupComment: {
+                get() {
+                    return groupModule.group.comment;
+                },
+                set(comment) {
+                    return groupModule.setComment(comment);
+                }
             }
         },
         methods: {
@@ -80,23 +88,21 @@
                 this.groupFormDisplayed = !this.groupFormDisplayed;
             },
             validateGroupCreation() {
-                Xhr.buildGetUrl('/api/reference_groups')
-                    .then(url => {
-                        return Xhr.fetch(url, {
-                            method: 'POST',
-                            headers: new Headers({
-                                "Content-Type": "application/json"
-                            }),
-                            body: JSON.stringify({
-                                'comment': this.$refs.newGroupComment.getValue(),
-                                'books': [
-                                    '/api/books/' + this.cBookId
-                                ]
-                            })
-                        });
-                    })
-                    .then(() => {
-                        this.loadGroups();
+                groupModule.save()
+                    .then(group => {
+                        //Add the group on the list widget
+                        this.blocs.push(new AccordionBloc(group.comment, group.id));
+                        this.$set(this.blocsRows, group.id, [
+                            new Element(this.bookStore.book.id, this.bookStore.book.title)
+                        ]);
+
+                        //Add the group on the list of groups to be linked to the book on saving
+                        this.relatedGroups.push(group);
+
+                        //Re-init the groupModule to clear the form
+                        groupModule.init();
+
+                        //Hide the popup
                         this.groupFormDisplayed = false;
                     })
                     .catch(error => {
@@ -105,41 +111,28 @@
                     });
             },
             validateGroupLinking() {
-                let groupId = this.$refs.selectExistingGroups.getValue();
+                const groupId = this.$refs.selectExistingGroups.getValue();
+                const group = this.cacheGroupList[groupId];
 
-                let aBookLinked = this.cacheGroupList[groupId]['books'];
-                aBookLinked.push('/api/books/' + this.cBookId);
+                //Add the group on the list widget
+                this.blocs.push(new AccordionBloc(group.comment, group.id));
+                const rows = group.books.map(book => {
+                    return new Element(book.id, book.title);
+                });
+                rows.push(new Element(this.bookStore.book.id, this.bookStore.book.title));
+                this.$set(this.blocsRows, group.id, rows);
 
-                Xhr.buildGetUrl('/api/reference_groups/' + groupId)
-                    .then(url => {
-                        return Xhr.fetch(url, {
-                            method: 'PUT',
-                            headers: new Headers({
-                                "Content-Type": "application/json"
-                            }),
-                            body: JSON.stringify({
-                                'books': aBookLinked
-                            })
-                        });
-                    })
-                    .then(() => {
-                        this.loadGroups();
-                        this.groupFormDisplayed = false;
-                    })
-                    .catch(error => {
-                        console.error(error);
-                        alert("Une erreur c'est produite et le livre n'a pas été ajouté au groupe");
-                    });
+
+                //Add the group on the list of groups to be linked to the book on saving
+                this.relatedGroups.push(group);
+
+                //Hide the popup
+                this.groupFormDisplayed = false;
             },
             loadGroups() {
-                if (this.cBookId.length === 0) return;
+                if (typeof this.bookId === 'undefined') return;
 
-                Xhr.buildGetUrl('/api/reference_groups', {'books.id': this.cBookId})
-                    .then(url => {
-                        return Xhr.fetch(url, {
-                            method: 'GET'
-                        });
-                    })
+                groupModule.list({'books.id': this.bookId})
                     .then(data => {
                         let blocs = [];
                         data['hydra:member'].forEach(referenceGroup => {
@@ -147,14 +140,19 @@
                             blocs.push(new AccordionBloc(referenceGroup.comment, referenceGroup.id));
 
                             //Get the list of the books title's to display for this reference group
-                            let blocRows = [];
-                            Object.keys(referenceGroup.books).forEach(index => {
-                                let book = referenceGroup.books[index];
-                                let listElement = new Element(book.id, book.title);
-                                blocRows.push(listElement);
+                            const blocRows = referenceGroup.books.map(book => {
+                                return new Element(book.id, book.title);
                             });
                             this.$set(this.blocsRows, referenceGroup.id, blocRows);
                         });
+
+    // import {mapActions} from 'vuex';
+    // import store from '../../../../assets/js/store';
+    // import BookModule from '../../../../assets/js/store/book';
+    //
+    // if (!store.state['book']) {
+    //     store.registerModule('book', BookModule);
+    // }
                         this.blocs = blocs;
                     })
                     .catch(error => {
@@ -163,12 +161,7 @@
                     });
             },
             getExistingGroupsPromise() {
-                return Xhr.buildGetUrl('/api/reference_groups', {'order': {'comment': 'DESC'}})
-                    .then(url => {
-                        return Xhr.fetch(url, {
-                            method: 'GET'
-                        })
-                    })
+                return groupModule.list({'order': {'comment': 'DESC'}})
                     .then(data => {
                         let groups = {};
                         if (data['hydra:member']) {
@@ -188,10 +181,25 @@
             }
         },
         watch: {
-            cBookId() {
+            bookId() {
                 this.loadGroups();
             }
         },
-        store
+        created() {
+            eventService.on(BookModule.EVENT_BOOK_SAVED, () => {
+                this.relatedGroups.forEach(group => {
+                    let bookLinked = group.books.reduce((accu, book) => {
+                        return accu || book['@id'] === this.bookStore.book['@id'];
+                    }, false);
+
+                    if (!bookLinked) {
+                        groupModule.set(group);
+                        groupModule.addBook(this.bookStore.book['@id']);
+                        groupModule.save();
+                    }
+                })
+            });
+            this.loadGroups();
+        }
     }
 </script>

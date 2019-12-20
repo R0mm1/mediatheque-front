@@ -1,6 +1,6 @@
 export default interface EntityModuleInterface<T> {
 
-    get(id: Number): Promise<T | undefined>;
+    get(id: number): Promise<T | undefined>;
 
     set(entity: T): void;
 

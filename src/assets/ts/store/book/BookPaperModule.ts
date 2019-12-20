@@ -1,65 +1,73 @@
 import {Action, getModule, Module, Mutation, VuexModule} from "vuex-module-decorators";
 import {BookPaperEntity} from "@/assets/ts/entity/BookPaperEntity";
-import BookService from "@/assets/ts/service/BookService";
 import {BookModule} from "@/assets/ts/store/book/BookModule";
 import Xhr from "@/assets/js/xhr";
-import {AuthorEntity} from "@/assets/ts/entity/AuthorEntity";
-import {GroupEntity} from "@/assets/ts/entity/GroupEntity";
 import store from "@/assets/js/store";
 import EntityModuleInterface from "@/assets/ts/store/EntityModuleInterface";
-import {BookElectronicEntity} from "@/assets/ts/entity/BookElectronicEntity";
+import EntityProxyService from "@/assets/ts/service/EntityProxyService";
+import HistoryService from "@/assets/ts/service/HistoryService";
+import {bookElectronicBaseUrl} from "@/assets/ts/store/book/BookElectronicModule";
 
 @Module({dynamic: true, name: 'bookPaper', store: store, namespaced: true})
 class BookPaperModule extends BookModule implements EntityModuleInterface<BookPaperEntity> {
 
-    protected baseUrl: string = "/api/paper_books/";
+    static baseUrl: string = "/api/paper_books";
 
     book: BookPaperEntity = this.bookService.getBasePaperBook();
 
+    protected proxy: EntityProxyService<BookPaperEntity> = new EntityProxyService(
+        this.flagService, this.historyService
+    );
+
     @Mutation set(book: BookPaperEntity) {
         this.flagService.reset();
-        this.book = book;
+        this.historyService.init();
+        this.book = new Proxy(book, this.proxy);
     }
 
-    @Action
-    get(id: Number) {
-        return super.getBase(id)
+    @Mutation init(): void {
+        this.flagService.reset();
+        this.historyService.init();
+        this.book = new Proxy(this.bookService.getBasePaperBook(), this.proxy);
+    }
+
+    @Mutation setHistoryService(historyService: HistoryService) {
+        super.setHistoryService(historyService);
+        this.proxy.historyService = historyService;
+    }
+
+    @Action({rawError: true}) get(id: number) {
+        this.historyService.init();
+        return super.getBase(id, BookPaperModule.baseUrl)
             .then(bookPaper => {
                 this.set(bookPaper);
                 return this.book;
             });
     }
 
-    @Action
-    save(): Promise<boolean> {
+    @Action({rawError: true}) save(bookTypeChanged: boolean = false): Promise<boolean> {
         const method = this.bookService.isPersisted(this.book) ? 'PUT' : 'POST';
-        const url = '/api/paper_books' + method === 'PUT' ? '/' + this.book.id : '';
+        const url = (bookTypeChanged ? bookElectronicBaseUrl : BookPaperModule.baseUrl)
+            + (method === 'PUT' ? ('/' + this.book.id) : '');
 
         return Xhr.buildGetUrl(url)
             .then(url => {
-                //todo: check if authors and groups transformation from array of objects to array of IRI is actually required.
                 return Xhr.fetch(url, {
                     method: method,
                     headers: new Headers({'Content-Type': 'application/json'}),
-                    body: JSON.stringify({
-                        ...this.book,
-                        // @ts-ignore
-                        authors: this.book.authors.map((author: AuthorEntity) => {
-                            return '/api/authors/' + author.id;
-                        }),
-                        // @ts-ignore
-                        groups: this.book.groups.map((group: GroupEntity) => {
-                            return '/api/reference_groups/' + group.id;
-                        })
-                    })
+                    body: this.bookService.prepareForUpload(this.book)
                 });
             })
             .then((response: BookPaperEntity) => {
+                response.authors = this.book.authors;
                 this.set(response);
+
+                this.eventService.trigger(BookPaperModule.EVENT_BOOK_SAVED);
+
                 return Promise.resolve(true);
-            })
-            .catch(() => Promise.resolve(false));
+            });
     }
 }
 
 export default getModule(BookPaperModule);
+export const bookPaperBaseUrl = BookPaperModule.baseUrl;

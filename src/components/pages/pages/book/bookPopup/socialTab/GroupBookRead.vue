@@ -67,7 +67,7 @@
                     this.isNotationLoading = false;
                 })
                 .catch(response => {
-                    console.log(response);
+                    console.error(response);
                 });
         },
         store

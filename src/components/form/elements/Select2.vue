@@ -25,9 +25,8 @@
             type: Object, default: () => {
             }
         }) options!: any;
-        @Prop({type: String, default: ''}) value!: string;
+        @Prop({type: String, default: ''}) value?: string|null;
 
-        dataValue?: string;
         id?: number;
         element: (Node | null) = null;
 
@@ -39,8 +38,16 @@
             return this.hasDescriptorProvided ? this.selectDescriptor.getOptionsAsObjects() : this.options;
         }
 
-        get cValue() {
+        get dataValue():string| undefined |null{
             return this.hasDescriptorProvided ? this.selectDescriptor.value : this.value;
+        }
+
+        set dataValue(value: string|undefined|null) {
+            if (this.hasDescriptorProvided) {
+                Vue.set(this.selectDescriptor, 'value', value);
+            } else {
+                this.value = value;
+            }
         }
 
         get hasDescriptorProvided() {
@@ -48,16 +55,12 @@
         }
 
         @Emit()
-        change(value: any) {
-            return value;
+        change(dataValue: any) {
+            return dataValue;
         }
 
         mounted() {
             this.element = this.$el.querySelector('.element_content');
-        }
-
-        created() {
-            this.dataValue = this.cValue;
         }
     }
 </script>

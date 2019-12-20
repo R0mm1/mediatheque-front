@@ -14,17 +14,10 @@
     import Group from "../../../../../popup/Group";
     import InputPicture from "../../../../../form/elements/InputPicture";
 
-    import store from "../../../../../../assets/js/store";
-    import {mapState} from 'vuex';
-    import BookModule from "../../../../../../assets/js/store/book";
-
-    if (!store.state['book']) {
-        store.registerModule('book', BookModule);
-    }
-
     export default {
         name: "GroupPicture",
         components: {InputPicture, Group},
+        props: {bookStore: {required: true}},
         data() {
             return {
                 src: ''
@@ -32,32 +25,56 @@
         },
         methods: {
             pictureChanged(newFile) {
-                this.$store.dispatch('book/setCover', {
-                    file: newFile
+                this.bookStore.unlinkCover();
+                this.bookStore.linkNewCover({
+                    file: newFile,
+                    name: newFile.name
                 });
+            },
+            load() {
+                if (this.cover.length === 0) return;
+
+                const setFile = (file) => {
+                    const urlCreator = window.URL || window.webkitURL;
+                    this.src = urlCreator.createObjectURL(file);
+                };
+
+                if (this.cover instanceof File) {
+                    setFile(this.cover);
+                } else {
+                    Xhr.buildGetUrl(this.cover)
+                        .then(url => {
+                            return Xhr.fetch(url, {});
+                        })
+                        .then(response => response.blob())
+                        .then(data => setFile(data));
+                }
             }
         },
-        computed: mapState({
-            cover: state => {
-                return state.book.book.cover ? state.book.book.cover : ''
+        computed: {
+            cover() {
+                const cover = this.bookStore.book.cover;
+
+                if (typeof cover === 'undefined' || cover === null) {
+                    return '';
+                } else if (typeof cover === 'string') {
+                    return cover;
+                } else if (typeof cover === 'object' && typeof cover["@id"] !== 'undefined') {
+                    return cover["@id"];
+                } else if (typeof cover === 'object' && cover.id === 0 && this.bookStore.tempNewCover instanceof File) {
+                    return this.bookStore.tempNewCover;
+                }
+                return '';
             }
-        }),
+        },
         watch: {
             cover(cover) {
-                if (cover.length === 0) return;
-
-                Xhr.buildGetUrl(cover)
-                    .then(url => {
-                        return Xhr.fetch(url, {});
-                    })
-                    .then(response => response.blob())
-                    .then(data => {
-                        const urlCreator = window.URL || window.webkitURL;
-                        this.src = urlCreator.createObjectURL(data);
-                    });
+                this.load();
             }
         },
-        store
+        created() {
+            this.load();
+        }
     }
 </script>
 

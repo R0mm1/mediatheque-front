@@ -15,7 +15,7 @@
 <script lang="ts">
     import {Component, Prop, Vue} from "vue-property-decorator";
     import FormElement from "@/components/form/FormElement.vue";
-    import ButtonDescriptor from "../../../assets/ts/form/ButtonDescriptor";
+    import ButtonDescriptor from "@/assets/ts/form/ButtonDescriptor";
 
     @Component({
         components: {FormElement}

@@ -6,7 +6,7 @@
 
 
         <template v-slot:group_content>
-            <Wysiwyg id="wysiwygSummary" :name="'summary'" :no-label="true" :content="cSummary"
+            <Wysiwyg id="wysiwygSummary" name="summary" :no-label="true" :content="summary"
                      v-on:content-changed="summaryChanged"></Wysiwyg>
         </template>
 
@@ -17,30 +17,24 @@
     import Group from "../../../../../popup/Group";
     import Wysiwyg from "../../../../../form/elements/Wysiwyg";
 
-    import store from "../../../../../../assets/js/store";
-    import BookModule from "../../../../../../assets/js/store/book";
-
-    if (!store.state['book']) {
-        store.registerModule('book', BookModule);
-    }
-
     export default {
         name: "GroupSummary",
         components: {Wysiwyg, Group},
+        props: {bookStore: {required: true}},
         methods: {
             summaryChanged(newContent) {
-                this.$store.commit('book/setProperty', {
-                    propertyName: 'summary',
-                    value: newContent
-                });
+                this.bookStore.setSummary(newContent);
             }
         },
         computed: {
-            cSummary(){
-                return this.$store.getters['book/getProperty']('summary');
+            summary() {
+                let summary = this.bookStore.book.summary;
+                if (summary === null) {
+                    summary = '';
+                }
+                return summary;
             }
-        },
-        store
+        }
     }
 </script>
 

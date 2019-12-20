@@ -12,7 +12,6 @@
                   :left-action-bar-properties="leftActionBarProperties"
                   :custom-filters="cCustomFilters"
                   v-on:custom-action-triggered="customActionTriggered"
-                  v-on:list-action-add="newBook"
                   v-on:list-action-set="setBook"/>
 
         </template>
@@ -28,16 +27,15 @@
 
     import Page from './../Page';
     import List from './../../list/List';
-    import Book from './../../../assets/js/book';
 
     import store from '../../../assets/js/store';
     import BookModule from '../../../assets/js/store/book';
-    import SelectDescriptor from "../../../assets/ts/form/SelectDescriptor";
     import LeftActionBarElement from "../../../assets/ts/list/LeftActionBarElement";
     import LeftActionBarProperties from "../../../assets/ts/list/LeftActionBarProperties";
     import LeftActionBarSeparator from "../../../assets/ts/list/LeftActionBarSeparator";
     import LeftActionBarFormSelectDescriptor from "../../../assets/ts/list/LeftActionBarFormSelectDescriptor";
     import Filter from "../../../assets/ts/list/Filter";
+    import ButtonDescriptor from "../../../assets/ts/form/ButtonDescriptor";
 
     if (!store.state['book']) {
         store.registerModule('book', BookModule);
@@ -54,7 +52,7 @@
             return {
                 isPopupDisplayed: false,
                 bookPopupElementId: null,
-                bookPopupElementType: null,
+                bookPopupElementType: 'PaperBook',
                 bookHasBeenModified: false,
                 cols: [
                     new Column('title', 'Titre'),
@@ -77,7 +75,24 @@
                         .setNeedConfirm(true, 'Re-cliquez pour confirmer la suppression')
                 ],
                 leftActionBarProperties: new LeftActionBarProperties([
-                    new LeftActionBarSeparator('Filtres'),
+                    new LeftActionBarSeparator('Ajouter', 'fas fa-plus'),
+                    new LeftActionBarElement(
+                        () => {
+                            this.bookPopupElementType = 'PaperBook';
+                            this.bookPopupElementId = null;
+                            this.isPopupDisplayed = true;
+                        },
+                        new ButtonDescriptor('addPaper', 'Livre papier')
+                    ),
+                    new LeftActionBarElement(
+                        () => {
+                            this.bookPopupElementType = 'ElectronicBook';
+                            this.bookPopupElementId = null;
+                            this.isPopupDisplayed = true;
+                        },
+                        new ButtonDescriptor('addElectronic', 'Epub')
+                    ),
+                    new LeftActionBarSeparator('Filtres', 'fas fa-sliders-h'),
                     new LeftActionBarElement(
                         (bookType) => {
                             let customFilter = new Filter('bookType', bookType);
@@ -89,22 +104,17 @@
                             'electronic': 'Epub'
                         }).setValue('all').setFaIcon('fas fa-book')
                     )
-                ]),
+                ], false),
                 customFilters: {}
             }
         },
         computed: {
-          cCustomFilters: function(){
-              return Object.values(this.customFilters);
-          }
+            cCustomFilters: function () {
+                return Object.values(this.customFilters);
+            }
         },
         methods: {
-            newBook: function () {
-                this.bookPopupElementId = null;
-                this.isPopupDisplayed = true;
-            },
             setBook: function (selectedBook) {
-                console.log(selectedBook['@type']);
                 this.bookPopupElementId = selectedBook.id;
                 this.bookPopupElementType = selectedBook['@type'];
                 this.bookHasBeenModified = false;

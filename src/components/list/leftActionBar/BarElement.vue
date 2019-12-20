@@ -37,7 +37,7 @@
         }
 
         executeCallback(e: any) {
-            this.element.callback(e);
+            this.element.callback(e, this.element);
         }
     }
 </script>

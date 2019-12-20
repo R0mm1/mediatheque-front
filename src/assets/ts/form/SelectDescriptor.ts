@@ -1,9 +1,9 @@
 import AbstractDescriptor from "@/assets/ts/form/AbstractDescriptor";
 
 export default class SelectDescriptor extends AbstractDescriptor {
-    static defaultSearchable:boolean = false;
+    static defaultSearchable: boolean = false;
 
-    value: (undefined | string) = undefined;
+    value: (undefined | string | null) = undefined;
     placeholder: string = '';
     options: { [index: string]: string };
     searchable: boolean = SelectDescriptor.defaultSearchable;
@@ -28,6 +28,11 @@ export default class SelectDescriptor extends AbstractDescriptor {
 
     setValue(value: string) {
         this.value = value;
+        return this;
+    }
+
+    setPlaceholder(placeholder: string) {
+        this.placeholder = placeholder;
         return this;
     }
 }

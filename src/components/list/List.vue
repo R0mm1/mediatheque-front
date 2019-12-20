@@ -119,7 +119,7 @@
                 });
         }
 
-        setPage(pageNumber: Number) {
+        setPage(pageNumber: number) {
             listModule.setPaginationCurrentPage(pageNumber);
             this.load(false);
         }

@@ -9,8 +9,8 @@ import Filter from "@/assets/ts/list/Filter";
 export default class ListModule extends VuexModule {
     _columns: { [index: string]: Column } = {};
 
-    _paginationRowsPerPage: Number = 30;
-    _paginationCurrentPage: Number = 1;
+    _paginationRowsPerPage: number = 30;
+    _paginationCurrentPage: number = 1;
 
     _customFilters: Filter[] = [];
 
@@ -49,7 +49,7 @@ export default class ListModule extends VuexModule {
         Vue.set(this._columns, dataField, column);
     }
 
-    @Mutation setPaginationCurrentPage(currentPage: Number) {
+    @Mutation setPaginationCurrentPage(currentPage: number) {
         this._paginationCurrentPage = currentPage;
     }
 

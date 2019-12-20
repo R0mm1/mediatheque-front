@@ -1,12 +1,12 @@
 <template>
     <Tab>
         <template v-slot:tab_content>
-            <GroupPicture class="groupPicture"></GroupPicture>
+            <GroupPicture :book-store="bookStore" class="groupPicture"/>
             <div class="bookPopupColumn">
-                <GroupSummary class="groupSummary"></GroupSummary>
-                <GroupReferences></GroupReferences>
+                <GroupSummary :book-store="bookStore" class="groupSummary"/>
+                <GroupReferences :book-store="bookStore"/>
             </div>
-            <GroupInformation class="groupInformation" :book-store="bookStore"></GroupInformation>
+            <GroupInformation class="groupInformation" :book-store="bookStore"/>
         </template>
     </Tab>
 </template>

@@ -1,31 +1,38 @@
-import {BookEntity, BookPaperEntity, BookElectronicEntity, AuthorEntity} from "@/assets/ts/entity/module";
-import FlagService from "@/assets/ts/service/FlagService";
+import {BookEntity, BookPaperEntity, BookElectronicEntity, AuthorEntity, GroupEntity} from "@/assets/ts/entity/module";
+import EntityService from "@/assets/ts/service/EntityService";
 
 export default class BookService {
-    static bookElectronic: String = 'ElectronicBook';
-    static bookPaper: String = 'PaperBook';
+    static bookElectronic: string = 'ElectronicBook';
+    static bookPaper: string = 'PaperBook';
 
+    entityService: EntityService = new EntityService();
 
     getBaseBook(): BookEntity {
         return {
+            cover: null,
             authors: [],
             groups: []
         };
     }
 
     getBasePaperBook(): BookPaperEntity {
-        return this.getBaseBook();
+        return {
+            ...this.getBaseBook(),
+            '@type': BookService.bookPaper
+        };
     }
 
     getBaseElectronicBook(): BookElectronicEntity {
         return {
             ...this.getBaseBook(),
-            hasBookFile: false
+            hasBookFile: false,
+            '@type': BookService.bookElectronic,
+            'bookFile': null
         };
     }
 
     isPersisted(book: BookEntity): boolean {
-        return book.id !== -1;
+        return typeof book.id !== 'undefined';
     }
 
     hasAuthor(book: BookEntity, author: AuthorEntity): boolean | number {
@@ -34,5 +41,24 @@ export default class BookService {
             if (author.id === bookAuthor.id) hasAuthor = index;
         });
         return hasAuthor;
+    }
+
+    prepareForUpload(book: BookPaperEntity | BookElectronicEntity) {
+        const bookPrepared: any = {
+            ...book,
+            cover: this.entityService.getIri(book.cover),
+            authors: book.authors.map((author: AuthorEntity): string => {
+                return '/api/authors/' + author.id;
+            }),
+            groups: book.groups.map((group: GroupEntity): string => {
+                return '/api/reference_groups/' + group.id;
+            })
+        };
+
+        if (typeof bookPrepared.bookFile !== 'undefined') {
+            bookPrepared.bookFile = this.entityService.getIri(book.bookFile);
+        }
+
+        return JSON.stringify(bookPrepared);
     }
 }

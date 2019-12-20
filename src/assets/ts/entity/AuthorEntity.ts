@@ -1,5 +1,5 @@
 export interface AuthorEntity {
-    id?: Number;
-    firstname?: String;
-    lastname?: String;
+    id?: number;
+    firstname?: string;
+    lastname?: string;
 }

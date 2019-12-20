@@ -18,7 +18,8 @@ class AuthorModule extends VuexModule implements EntityModuleInterface<AuthorEnt
     entityModuleService: EntityModuleService = new EntityModuleService();
 
     flagService = new FlagService<EntityModuleFlagInterface>({
-        isModified: false
+        isModified: false,
+        readyToSave: true
     });
 
     @Mutation new() {
@@ -38,15 +39,13 @@ class AuthorModule extends VuexModule implements EntityModuleInterface<AuthorEnt
     }
 
     @Mutation setLastname(lastname: string) {
-        console.log(this.entityModuleService.propertyUpdate<AuthorEntity>(this.author, this.flagService, 'lastname', lastname));
         ({
             entity: this.author,
             flagService: this.flagService
         } = this.entityModuleService.propertyUpdate<AuthorEntity>(this.author, this.flagService, 'lastname', lastname));
-        console.log(this.author);
     }
 
-    @Action get(id: Number): Promise<AuthorEntity | undefined> {
+    @Action get(id: number): Promise<AuthorEntity | undefined> {
         return Xhr.buildGetUrl(this.baseUrl + id)
             .then(url => Xhr.fetch(url, {
                 method: 'GET'

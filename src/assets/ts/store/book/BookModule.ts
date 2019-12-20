@@ -1,7 +1,7 @@
-import {Mutation, VuexModule} from "vuex-module-decorators";
+import {Action, Mutation, VuexModule} from "vuex-module-decorators";
 import {
     AuthorEntity,
-    BookEntity,
+    BookEntity, FileEntity,
     GroupEntity,
     UserEntity
 } from "@/assets/ts/entity/module";
@@ -10,99 +10,130 @@ import BookService from "@/assets/ts/service/BookService";
 import FlagService from "@/assets/ts/service/FlagService";
 import EntityModuleFlagInterface from "@/assets/ts/store/EntityModuleFlagInterface";
 import EntityModuleService from "@/assets/ts/service/EntityModuleService";
+import EventService from "@/assets/ts/service/EventService";
+import HistoryService from "@/assets/ts/service/HistoryService";
+import {parse} from "@typescript-eslint/parser";
 
 export abstract class BookModule extends VuexModule {
 
-    protected baseUrl: string = '/api/books/';
+    static EVENT_BOOK_SAVED = 'book-saved';
 
-    bookService: BookService = new BookService();
+    static baseUrl: string = '/api/books';
 
-    entityModuleService: EntityModuleService = new EntityModuleService();
+    protected bookService: BookService = new BookService();
+
+    protected eventService: EventService = EventService.getService();
+
+    historyService: HistoryService = new HistoryService();
 
     book: BookEntity = this.bookService.getBaseBook();
 
+    tempNewCover: File | null = null; //Can't use undefined instead of null otherwise the attribute won't appear on the state
+
     flagService: FlagService<EntityModuleFlagInterface> = new FlagService({
-        isModified: false
+        isModified: false,
+        readyToSave: true
     });
 
-    @Mutation setBook(book: BookEntity) {
-        this.book = book;
-    }
-
-    protected getBase(id: Number): Promise<BookEntity> {
-        return Xhr.buildGetUrl(this.baseUrl + id)
+    protected getBase(id: number, baseUrl: string): Promise<BookEntity> {
+        return Xhr.buildGetUrl(baseUrl + '/' + id)
             .then(url => Xhr.fetch(url, {
                 method: 'GET'
             }));
     }
 
-    @Mutation setTitle(title: String) {
-        ({
-            entity: this.book,
-            flagService: this.flagService
-        } = this.entityModuleService.propertyUpdate<BookEntity>(this.book, this.flagService, 'title', title));
+    abstract init(): void;
+
+    @Mutation setHistoryService(historyService: HistoryService) {
+        this.historyService = historyService;
     }
 
-    @Mutation setYear(year: String) {
-        ({
-            entity: this.book,
-            flagService: this.flagService
-        } = this.entityModuleService.propertyUpdate<BookEntity>(this.book, this.flagService, 'year', year));
+    @Mutation setBook(book: BookEntity) {
+        this.book = book;
     }
 
-    @Mutation setPageCount(pageCount: Number) {
-        ({
-            entity: this.book,
-            flagService: this.flagService
-        } = this.entityModuleService.propertyUpdate<BookEntity>(this.book, this.flagService, 'pageCount', pageCount));
+    @Mutation setTitle(title: string) {
+        this.book.title = title;
     }
 
-    @Mutation setIsbn(isbn: String) {
-        ({
-            entity: this.book,
-            flagService: this.flagService
-        } = this.entityModuleService.propertyUpdate<BookEntity>(this.book, this.flagService, 'isbn', isbn));
+    @Mutation setYear(year: string) {
+        this.book.year = year;
     }
 
-    @Mutation setLanguage(language: String) {
-        ({
-            entity: this.book,
-            flagService: this.flagService
-        } = this.entityModuleService.propertyUpdate<BookEntity>(this.book, this.flagService, 'language', language));
+    @Mutation setPageCount(pageCount: string) {
+        this.book.pageCount = parseInt(pageCount);
     }
 
-    @Mutation setSummary(summary: String) {
-        ({
-            entity: this.book,
-            flagService: this.flagService
-        } = this.entityModuleService.propertyUpdate<BookEntity>(this.book, this.flagService, 'summary', summary));
+    @Mutation setIsbn(isbn: string) {
+        this.book.isbn = isbn;
+    }
+
+    @Mutation setLanguage(language: string) {
+        this.book.language = language;
+    }
+
+    @Mutation setSummary(summary: string) {
+        this.book.summary = summary;
     }
 
     @Mutation addAuthor(author: AuthorEntity) {
         let authorAtIndex = this.bookService.hasAuthor(this.book, author);
         if (authorAtIndex === false) {
-            this.book.authors.push(author);
-            this.flagService.flags.isModified = true;
+            const authors = Array.from(this.book.authors);
+            authors.push(author);
+            this.book.authors = authors;
         }
     }
 
     @Mutation removeAuthor(author: AuthorEntity) {
         let authorAtIndex = this.bookService.hasAuthor(this.book, author);
         if (typeof authorAtIndex === 'number') {
-            this.book.authors.splice(authorAtIndex, 1);
-            this.flagService.flags.isModified = true;
+            const authors = Array.from(this.book.authors);
+            authors.splice(authorAtIndex, 1);
+            this.book.authors = authors;
         }
     }
 
-    @Mutation setCover(cover: String) {
-        this.book.cover = cover;
+    @Mutation setOwner(owner: UserEntity | string | number) {
+        if (typeof owner === "number") {
+            owner = '/api/users/' + owner;
+        }
+        this.book.owner = owner;
     }
 
-    @Mutation setOwner(owner: UserEntity) {
-        this.book.owner = owner;
+    @Mutation setCover(cover: FileEntity) {
+        this.book.cover = cover;
     }
 
     @Mutation addGroup(group: GroupEntity) {
         this.book.groups.push(group);
+    }
+
+    @Mutation unlinkCover() {
+        this.book.cover = undefined;
+        this.tempNewCover = null;
+    }
+
+    @Mutation setTempNewCover(cover: File) {
+        this.tempNewCover = cover;
+    }
+
+    @Action({rawError: true})
+    async linkNewCover(file: { file: File, name: string }) {
+        this.context.commit('setTempNewCover', file.file);
+
+        this.flagService.flags.readyToSave = false;
+
+        return Xhr.buildGetUrl('/api/book/covers')
+            .then(url => Xhr.sendFile(file.file, url))
+            .then((response: FileEntity) => {
+                this.context.commit('setCover', response);
+                this.flagService.flags.readyToSave = true;
+                return Promise.resolve(response);
+            })
+            .catch(response => {
+                this.flagService.flags.readyToSave = true;
+                return Promise.reject(response);
+            });
     }
 }
