@@ -40,8 +40,10 @@ class GroupModule extends VuexModule {
     }
 
     @Action save() {
-        const method = typeof this.group.id !== 'undefined' ? 'PUT' : 'POST';
-        const url = '/api/reference_groups' + (method === 'PUT' ? '/' + this.group.id : '');
+        const group = JSON.parse(JSON.stringify(this.group));
+
+        const method = typeof group.id !== 'undefined' ? 'PUT' : 'POST';
+        const url = '/api/reference_groups' + (method === 'PUT' ? '/' + group.id : '');
 
         return Xhr.buildGetUrl(url, {})
             .then(url => {
@@ -49,9 +51,8 @@ class GroupModule extends VuexModule {
                     method: method,
                     headers: new Headers({'Content-Type': 'application/json'}),
                     body: (() => {
-                        const group = this.group;
                         // @ts-ignore
-                        group.books = this.group.books.map((book: BookEntity | string) => {
+                        group.books = group.books.map((book: BookEntity | string) => {
                             return this.entityService.getIri(book);
                         });
                         return JSON.stringify(group);

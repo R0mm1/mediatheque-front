@@ -45,7 +45,7 @@ class BookPaperModule extends BookModule implements EntityModuleInterface<BookPa
             });
     }
 
-    @Action({rawError: true}) save(bookTypeChanged: boolean = false): Promise<boolean> {
+    @Action({rawError: true}) save(bookTypeChanged: boolean = false): Promise<any> {
         const method = this.bookService.isPersisted(this.book) ? 'PUT' : 'POST';
         const url = (bookTypeChanged ? bookElectronicBaseUrl : BookPaperModule.baseUrl)
             + (method === 'PUT' ? ('/' + this.book.id) : '');
@@ -64,7 +64,7 @@ class BookPaperModule extends BookModule implements EntityModuleInterface<BookPa
 
                 this.eventService.trigger(BookPaperModule.EVENT_BOOK_SAVED);
 
-                return Promise.resolve(true);
+                return Promise.all(this.referenceGroupsSaving);
             });
     }
 }

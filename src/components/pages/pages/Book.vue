@@ -82,7 +82,7 @@
                             this.bookPopupElementId = null;
                             this.isPopupDisplayed = true;
                         },
-                        new ButtonDescriptor('addPaper', 'Livre papier')
+                        new ButtonDescriptor('addPaper', 'Livre papier').setFaIcon('fas fa-scroll')
                     ),
                     new LeftActionBarElement(
                         () => {
@@ -90,7 +90,7 @@
                             this.bookPopupElementId = null;
                             this.isPopupDisplayed = true;
                         },
-                        new ButtonDescriptor('addElectronic', 'Epub')
+                        new ButtonDescriptor('addElectronic', 'Epub').setFaIcon('fas fa-tablet-alt')
                     ),
                     new LeftActionBarSeparator('Filtres', 'fas fa-sliders-h'),
                     new LeftActionBarElement(

@@ -195,7 +195,7 @@
                     if (!bookLinked) {
                         groupModule.set(group);
                         groupModule.addBook(this.bookStore.book['@id']);
-                        groupModule.save();
+                        this.bookStore.addReferenceGroupSaving(groupModule.save());
                     }
                 })
             });
