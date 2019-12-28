@@ -29,11 +29,11 @@
         @Prop(Object) element!: LeftActionBarElement;
 
         get isButton() {
-            return this.element.elementDescriptor.constructor.name === ButtonDescriptor.name;
+            return this.element.elementDescriptor.descriptorType === 'ButtonDescriptor';
         }
 
         get isSelect() {
-            return this.element.elementDescriptor.constructor.name === LeftActionBarFormSelectDescriptor.name;
+            return this.element.elementDescriptor.descriptorType === 'LeftActionBarFormSelectDescriptor';
         }
 
         executeCallback(e: any) {

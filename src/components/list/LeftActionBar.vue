@@ -38,7 +38,7 @@
         );
 
         isElement(element: LeftActionBarElement | LeftActionBarSeparator) {
-            return element.constructor.name === LeftActionBarElement.name;
+            return typeof (element as any).elementDescriptor !== 'undefined';
         }
 
         isSeparator(element: LeftActionBarElement | LeftActionBarSeparator) {

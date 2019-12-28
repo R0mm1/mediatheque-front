@@ -1,9 +1,10 @@
 import AbstractDescriptor from "@/assets/ts/form/AbstractDescriptor";
 
-export default class ButtonDescriptor extends AbstractDescriptor{
+export default class ButtonDescriptor extends AbstractDescriptor {
     readonly type_button = 'button';
     readonly type_submit = 'submit';
 
+    descriptorType = 'ButtonDescriptor';
     type: string = this.type_button;
     value: string = '';
     disabled: boolean = false;

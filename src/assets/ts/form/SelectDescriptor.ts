@@ -3,6 +3,7 @@ import AbstractDescriptor from "@/assets/ts/form/AbstractDescriptor";
 export default class SelectDescriptor extends AbstractDescriptor {
     static defaultSearchable: boolean = false;
 
+    descriptorType: string = 'SelectDescriptor';
     value: (undefined | string | null) = undefined;
     placeholder: string = '';
     options: { [index: string]: string };
