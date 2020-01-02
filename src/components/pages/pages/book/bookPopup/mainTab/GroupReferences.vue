@@ -146,13 +146,6 @@
                             this.$set(this.blocsRows, referenceGroup.id, blocRows);
                         });
 
-    // import {mapActions} from 'vuex';
-    // import store from '../../../../assets/js/store';
-    // import BookModule from '../../../../assets/js/store/book';
-    //
-    // if (!store.state['book']) {
-    //     store.registerModule('book', BookModule);
-    // }
                         this.blocs = blocs;
                     })
                     .catch(error => {
@@ -182,11 +175,15 @@
         },
         watch: {
             bookId() {
+                this.relatedGroups = [];
                 this.loadGroups();
             }
         },
         created() {
             eventService.on(BookModule.EVENT_BOOK_SAVED, () => {
+
+                const referenceGroupSaving = [];
+
                 this.relatedGroups.forEach(group => {
                     let bookLinked = group.books.reduce((accu, book) => {
                         return accu || book['@id'] === this.bookStore.book['@id'];
@@ -195,11 +192,14 @@
                     if (!bookLinked) {
                         groupModule.set(group);
                         groupModule.addBook(this.bookStore.book['@id']);
-                        this.bookStore.addReferenceGroupSaving(groupModule.save());
+                        referenceGroupSaving.push(groupModule.save());
                     }
-                })
+                });
+
+                Promise.all(referenceGroupSaving).then(() => {
+                    this.loadGroups();
+                });
             });
-            this.loadGroups();
         }
     }
 </script>

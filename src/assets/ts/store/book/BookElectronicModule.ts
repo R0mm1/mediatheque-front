@@ -91,8 +91,6 @@ class BookElectronicModule extends BookModule implements EntityModuleInterface<B
                 this.set(response);
 
                 this.eventService.trigger(BookElectronicModule.EVENT_BOOK_SAVED);
-
-                return Promise.all(this.referenceGroupsSaving);
             });
     }
 

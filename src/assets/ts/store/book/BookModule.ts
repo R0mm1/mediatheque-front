@@ -33,8 +33,6 @@ export abstract class BookModule extends VuexModule {
         readyToSave: true
     });
 
-    referenceGroupsSaving: Promise<any>[] = [];
-
     protected getBase(id: number, baseUrl: string): Promise<BookEntity> {
         return Xhr.buildGetUrl(baseUrl + '/' + id)
             .then(url => Xhr.fetch(url, {
@@ -116,10 +114,6 @@ export abstract class BookModule extends VuexModule {
 
     @Mutation setTempNewCover(cover: File) {
         this.tempNewCover = cover;
-    }
-
-    @Mutation addReferenceGroupSaving(promise: Promise<any>) {
-        this.referenceGroupsSaving.push(promise);
     }
 
     @Action({rawError: true})

@@ -63,8 +63,6 @@ class BookPaperModule extends BookModule implements EntityModuleInterface<BookPa
                 this.set(response);
 
                 this.eventService.trigger(BookPaperModule.EVENT_BOOK_SAVED);
-
-                return Promise.all(this.referenceGroupsSaving);
             });
     }
 }
