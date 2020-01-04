@@ -1,0 +1,82 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Page renders correctly with Header 1`] = `
+<div
+  class=""
+  id="med_page"
+>
+  <div
+    id="med_page_header"
+  >
+    <header
+      id="vueHeader"
+    >
+      <div
+        id="mainLogo"
+      >
+        <img
+          alt="Médiathèque"
+          src="/images/logo.png"
+        />
+      </div>
+       
+      <!---->
+       
+      <div
+        id="customHeaderMessage"
+      >
+        
+      </div>
+       
+      <!---->
+    </header>
+  </div>
+   
+  <div
+    id="med_page_body"
+  >
+    <div>
+      Page Body
+    </div>
+  </div>
+   
+  <div
+    id="med_page_footer"
+  >
+    <div>
+      Page Footer
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Page renders correctly with custom header 1`] = `
+<div
+  class=""
+  id="med_page"
+>
+  <div
+    id="med_page_header"
+  >
+    <div>
+      Page Header
+    </div>
+  </div>
+   
+  <div
+    id="med_page_body"
+  >
+    <div>
+      Page Body
+    </div>
+  </div>
+   
+  <div
+    id="med_page_footer"
+  >
+    <div>
+      Page Footer
+    </div>
+  </div>
+</div>
+`;

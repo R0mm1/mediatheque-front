@@ -1,0 +1,143 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TopButtonBar renders correctly 1`] = `
+<div
+  id="med_popup_topbuttonbar"
+>
+  <div
+    class="form_element main selected form_element_button"
+  >
+    <label
+      class="element_label fas fa-book"
+      for=""
+    >
+      
+            
+        
+    </label>
+     
+    <div
+      class="element_content hide_content"
+    >
+      <input
+        name=""
+        type="button"
+      />
+    </div>
+  </div>
+  <div
+    class="form_element social form_element_button"
+  >
+    <label
+      class="element_label fas fa-comment"
+      for=""
+    >
+      
+            
+        
+    </label>
+     
+    <div
+      class="element_content hide_content"
+    >
+      <input
+        name=""
+        type="button"
+      />
+    </div>
+  </div>
+   
+  <div
+    class="form_element form_element_button"
+  >
+    <label
+      class="element_label fas fa-times"
+      for=""
+    >
+      
+            
+        
+    </label>
+     
+    <div
+      class="element_content hide_content"
+    >
+      <input
+        name=""
+        type="button"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`TopButtonBar renders correctly after tab changed 1`] = `
+<div
+  id="med_popup_topbuttonbar"
+>
+  <div
+    class="form_element main form_element_button"
+  >
+    <label
+      class="element_label fas fa-book"
+      for=""
+    >
+      
+            
+        
+    </label>
+     
+    <div
+      class="element_content hide_content"
+    >
+      <input
+        name=""
+        type="button"
+      />
+    </div>
+  </div>
+  <div
+    class="form_element social selected form_element_button"
+  >
+    <label
+      class="element_label fas fa-comment"
+      for=""
+    >
+      
+            
+        
+    </label>
+     
+    <div
+      class="element_content hide_content"
+    >
+      <input
+        name=""
+        type="button"
+      />
+    </div>
+  </div>
+   
+  <div
+    class="form_element form_element_button"
+  >
+    <label
+      class="element_label fas fa-times"
+      for=""
+    >
+      
+            
+        
+    </label>
+     
+    <div
+      class="element_content hide_content"
+    >
+      <input
+        name=""
+        type="button"
+      />
+    </div>
+  </div>
+</div>
+`;

@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`User renders correctly 1`] = `
+<div
+  id="headerUserElement"
+>
+  <div
+    class="form_element form_element_button"
+  >
+    <label
+      class="element_label fas fa-user-circle"
+      for="userAccount"
+    >
+      
+            
+        
+    </label>
+     
+    <div
+      class="element_content hide_content"
+    >
+      <input
+        name="userAccount"
+        type="button"
+      />
+    </div>
+  </div>
+</div>
+`;

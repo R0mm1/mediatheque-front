@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Menu renders correctly 1`] = `
+<ul
+  id="mainMenu"
+>
+  <li>
+    
+        Livres
+        
+    <ul
+      class="subMenu l1Menu"
+    >
+      <li>
+        <a
+          href="/book"
+        >
+          Par livre
+        </a>
+      </li>
+      <li>
+        <a
+          href="/author"
+        >
+          Par auteur
+        </a>
+      </li>
+    </ul>
+  </li>
+</ul>
+`;

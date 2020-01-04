@@ -1,0 +1,94 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Select2 renders correctly 1`] = `
+<div
+  class="form_element form_element_select2"
+>
+  <label
+    class="element_label"
+    for=""
+  >
+    
+            
+        
+  </label>
+   
+  <div
+    class="element_content"
+  >
+    <div
+      class="v-input v-input--is-label-active v-input--is-dirty theme--light v-text-field v-select"
+    >
+      <div
+        class="v-input__control"
+      >
+        <div
+          aria-expanded="false"
+          aria-haspopup="listbox"
+          aria-owns="list-3"
+          class="v-input__slot"
+          role="button"
+        >
+          <div
+            class="v-select__slot"
+          >
+            <div
+              class="v-select__selections"
+            >
+              <div
+                class="v-select__selection v-select__selection--comma"
+              >
+                My first option
+              </div>
+              <input
+                aria-readonly="true"
+                autocomplete="off"
+                id="input-3"
+                readonly="readonly"
+                type="text"
+              />
+            </div>
+            <div
+              class="v-input__append-inner"
+            >
+              <div
+                class="v-input__icon v-input__icon--append"
+              >
+                <i
+                  aria-hidden="true"
+                  class="v-icon notranslate material-icons theme--light"
+                >
+                  $dropdown
+                </i>
+              </div>
+            </div>
+            <input
+              type="hidden"
+              value="option1"
+            />
+          </div>
+          <div
+            class="v-menu"
+          >
+            <div
+              class="v-menu__content theme--light "
+              style="max-height: 304px; min-width: 0px; max-width: auto; top: 0px; left: 0px; transform-origin: top left; z-index: 0; display: none;"
+            />
+          </div>
+        </div>
+        <div
+          class="v-text-field__details"
+        >
+          <div
+            class="v-messages theme--light"
+          >
+            <div
+              class="v-messages__wrapper"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

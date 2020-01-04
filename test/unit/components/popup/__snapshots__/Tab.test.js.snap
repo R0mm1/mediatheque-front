@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Tab renders correctly 1`] = `
+<div
+  id="med_popup_tab"
+>
+  <div>
+    Tab content
+  </div>
+</div>
+`;

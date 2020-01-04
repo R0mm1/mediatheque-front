@@ -1,0 +1,77 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Popup renders correctly when loaded 1`] = `
+<div
+  class="med_popup"
+>
+  <div
+    class="popup_header"
+  >
+    <div>
+      This is the header
+    </div>
+  </div>
+   
+  <div
+    class="popup_body"
+  >
+    <div
+      class="popup_loader"
+    >
+      <img
+        src="/images/loaders/b.svg"
+      />
+    </div>
+     
+    <div>
+      This is the body
+    </div>
+  </div>
+   
+  <div
+    class="popup_footer"
+  >
+    <div>
+      This is the footer
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Popup renders correctly when not loaded 1`] = `
+<div
+  class="med_popup"
+>
+  <div
+    class="popup_header"
+  >
+    <div>
+      This is the header
+    </div>
+  </div>
+   
+  <div
+    class="popup_body"
+  >
+    <div
+      class="popup_loader"
+    >
+      <img
+        src="/images/loaders/b.svg"
+      />
+    </div>
+     
+    <div>
+      This is the body
+    </div>
+  </div>
+   
+  <div
+    class="popup_footer"
+  >
+    <div>
+      This is the footer
+    </div>
+  </div>
+</div>
+`;
