@@ -1,7 +1,7 @@
 <template>
     <div id="headerUserElement">
         <InputButton :name="'userAccount'" :label-custom-classes="'fas fa-user-circle'"
-                     v-on:click.native="goToAccount"></InputButton>
+                     v-on:click.native="goToAccount"/>
     </div>
 </template>
 

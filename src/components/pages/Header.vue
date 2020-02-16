@@ -4,10 +4,10 @@
             <img src="/images/logo.png" alt="Médiathèque"/>
         </div>
 
-        <Menu v-if="!noUser"></Menu>
+        <Menu v-if="!noUser"/>
         <div id="customHeaderMessage">{{customHeaderMessage}}</div>
 
-        <User v-if="!noUser"></User>
+        <User v-if="!noUser"/>
     </header>
 </template>
 

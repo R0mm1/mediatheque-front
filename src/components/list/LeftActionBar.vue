@@ -55,7 +55,7 @@
         background-color: #e4dccc;
     }
 
-    #labElements{
+    #labElements {
         position: relative;
         overflow: hidden;
         height: 100%;

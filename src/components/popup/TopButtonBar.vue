@@ -8,7 +8,7 @@
         </InputButton>
 
         <InputButton v-on:click.native="$emit('popup-wanna-close')"
-                     label-custom-classes="fas fa-times"></InputButton>
+                     label-custom-classes="fas fa-times"/>
     </div>
 </template>
 
@@ -35,7 +35,7 @@
                 }
             },
             cClasses(topButtonBarElement) {
-                let classes = [];
+                let classes = [topButtonBarElement.tabName];
 
                 if ((this.selectedTabName === null && topButtonBarElement.tabName === this.defaultTab) || (topButtonBarElement.tabName === this.selectedTabName)) {
                     classes.push('selected');

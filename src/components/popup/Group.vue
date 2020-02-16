@@ -2,16 +2,16 @@
     <div class="med_popup_group">
         <div class="group_header">
             <h2 class="group_name">
-                <slot name="group_name"></slot>
+                <slot name="group_name"/>
             </h2>
 
             <div class="group_customActions">
-                <slot name="group_customActions"></slot>
+                <slot name="group_customActions"/>
             </div>
         </div>
 
         <div class="group_content">
-            <slot name="group_content"></slot>
+            <slot name="group_content"/>
         </div>
     </div>
 </template>

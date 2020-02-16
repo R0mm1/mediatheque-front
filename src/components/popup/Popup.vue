@@ -1,16 +1,16 @@
 <template>
     <div class="med_popup">
         <div class="popup_header">
-            <slot name="popup_header"></slot>
+            <slot name="popup_header"/>
         </div>
         <div class="popup_body">
             <div class="popup_loader" :class="{no_loading: loaded}">
-                <Loader></Loader>
+                <Loader/>
             </div>
-            <slot name="popup_body"></slot>
+            <slot name="popup_body"/>
         </div>
         <div class="popup_footer">
-            <slot name="popup_footer"></slot>
+            <slot name="popup_footer"/>
         </div>
     </div>
 </template>

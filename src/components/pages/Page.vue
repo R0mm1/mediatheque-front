@@ -3,16 +3,16 @@
 
         <div id="med_page_header">
             <slot name="med_page_header">
-                <Header :no-user="noUser" :custom-header-message="customHeaderMessage"></Header>
+                <Header :no-user="noUser" :custom-header-message="customHeaderMessage"/>
             </slot>
         </div>
 
         <div id="med_page_body">
-            <slot name="med_page_body"></slot>
+            <slot name="med_page_body"/>
         </div>
 
         <div id="med_page_footer">
-            <slot name="med_page_footer"></slot>
+            <slot name="med_page_footer"/>
         </div>
 
     </div>
