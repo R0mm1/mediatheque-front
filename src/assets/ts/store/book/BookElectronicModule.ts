@@ -20,7 +20,7 @@ class BookElectronicModule extends BookModule implements EntityModuleInterface<B
         this.flagService, this.historyService
     );
 
-    book: BookElectronicEntity = this.bookService.getBaseElectronicBook();
+    book: BookElectronicEntity = new Proxy(this.bookService.getBaseElectronicBook(), this.proxy);
 
     tempNewFile?: File = undefined;
 

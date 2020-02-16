@@ -12,11 +12,11 @@ class BookPaperModule extends BookModule implements EntityModuleInterface<BookPa
 
     static baseUrl: string = "/paper_books";
 
-    book: BookPaperEntity = this.bookService.getBasePaperBook();
-
     protected proxy: EntityProxyService<BookPaperEntity> = new EntityProxyService(
         this.flagService, this.historyService
     );
+
+    book: BookPaperEntity = new Proxy(this.bookService.getBasePaperBook(), this.proxy);
 
     @Mutation set(book: BookPaperEntity) {
         this.flagService.reset();

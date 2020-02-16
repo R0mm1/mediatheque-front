@@ -107,7 +107,7 @@ describe('BookPaperModule', () => {
         expect(bookPaperModule.historyService.history.length).toBe(0);
     });
 
-    it('Correctly get book from API', () => {
+    it('Correctly get book from API', async () => {
         //Make a modification to see if all services reinitialization is well done after the book changed
         bookPaperModule.setTitle('A title');
         expect(bookPaperModule.flagService.flags.isModified).toBe(true);
@@ -130,12 +130,12 @@ describe('BookPaperModule', () => {
             return Promise.resolve(book);
         });
 
-        bookPaperModule.get(10).then(bookReturned => {
-            expect(bookPaperModule.book).toStrictEqual(book);
-            expect(bookPaperModule.book).toStrictEqual(bookReturned);
-            expect(bookPaperModule.flagService.flags.isModified).toBe(false);
-            expect(bookPaperModule.historyService.history.length).toBe(0);
-        });
+        const bookReturned = await bookPaperModule.get(10);
+
+        expect(bookPaperModule.book).toStrictEqual(book);
+        expect(bookPaperModule.book).toStrictEqual(bookReturned);
+        expect(bookPaperModule.flagService.flags.isModified).toBe(false);
+        expect(bookPaperModule.historyService.history.length).toBe(0);
     });
 
     it('Correctly save book', async () => {

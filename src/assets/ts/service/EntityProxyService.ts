@@ -47,6 +47,8 @@ export default class EntityProxyService<Entity> {
                 isModified = ((target as any)[key] !== newVal);
             } else if (typeof (target as any)[key] === 'undefined') {
                 isModified = true;
+            } else {
+                isModified = true;
             }
         }
 

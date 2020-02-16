@@ -64,7 +64,7 @@
     "root": true,
     "env": {
       "node": true,
-      "jest": true
+      "jest":  true
     },
     "extends": [
       "plugin:vue/essential",
@@ -89,13 +89,20 @@
     "not ie <= 8"
   ],
   "jest": {
+    "moduleNameMapper": {
+      "@/components/(.*)": "<rootDir>/src/components/$1",
+      "@/assets/(.*)": "<rootDir>/src/assets/$1",
+      "@/App.vue": "<rootDir>/src/App.vue"
+    },
     "moduleFileExtensions": [
       "js",
-      "vue"
+      "vue",
+      "ts"
     ],
     "transform": {
       "^.+\\.vue$": "vue-jest",
-      "^.+\\.js$": "babel-jest"
+      "^.+\\.js$": "babel-jest",
+      "^.+\\.(ts|tsx)$": "ts-jest"
     },
     "moduleDirectories": [
       "node_modules",
