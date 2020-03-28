@@ -5,7 +5,7 @@
             <AuthorPopup v-if="isPopupDisplayed" :author-id="authorPopupElementId"
                          v-on:popup-wanna-close="closePopup"></AuthorPopup>
 
-            <List ref="list" apiEndpoint="/api/authors" :cols="cols"
+            <List ref="list" apiEndpoint="/authors" :cols="cols"
                   v-on:list-action-set="setAuthor"
                   v-on:list-action-add="newAuthor"/>
 

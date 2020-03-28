@@ -1,6 +1,8 @@
 import {BookEntity, BookPaperEntity, BookElectronicEntity, AuthorEntity, GroupEntity} from "@/assets/ts/entity/module";
 import EntityService from "@/assets/ts/service/EntityService";
 
+const config = require('../../../../mediatheque.json');
+
 export default class BookService {
     static bookElectronic: string = 'ElectronicBook';
     static bookPaper: string = 'PaperBook';
@@ -48,10 +50,10 @@ export default class BookService {
             ...book,
             cover: this.entityService.getIri(book.cover),
             authors: book.authors.map((author: AuthorEntity): string => {
-                return '/api/authors/' + author.id;
+                return config.api.commonUrlBase + '/authors/' + author.id;
             }),
             groups: book.groups.map((group: GroupEntity): string => {
-                return '/api/reference_groups/' + group.id;
+                return config.api.commonUrlBase + '/reference_groups/' + group.id;
             })
         };
 

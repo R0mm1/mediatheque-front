@@ -7,7 +7,7 @@
                        v-on:popup-wanna-close="closePopup"
                        v-on:book-saved="bookSaved"></BookPopup>
 
-            <List ref="list" apiEndpoint="/api/books"
+            <List ref="list" apiEndpoint="/books"
                   :cols="cols" :rowActions="rowActions"
                   :left-action-bar-properties="leftActionBarProperties"
                   :custom-filters="cCustomFilters"

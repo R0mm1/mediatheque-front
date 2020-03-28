@@ -1,6 +1,9 @@
-import Xhr from '../xhr';
+import {container} from 'tsyringe';
+import RequestService from "../../ts/service/RequestService";
 import Vue from 'vue';
 import MedFile from '../medFile';
+
+const requestService = container.resolve(RequestService);
 
 const BookModule = {
     namespaced: true,
@@ -56,7 +59,7 @@ const BookModule = {
             Vue.set(state.book, 'electronicBook', null);
         },
         setOwner(state, userId) {
-            Vue.set(state.book, 'owner', '/api/users/' + userId);
+            Vue.set(state.book, 'owner', '/users/' + userId);
         }
     },
     getters: {
@@ -86,14 +89,11 @@ const BookModule = {
     },
     actions: {
         loadBook(context, bookId) {
-            return Xhr.buildGetUrl('/api/books/' + bookId)
-                .then(url => {
-                    return Xhr.fetch(url, {});
-                })
+            const request = requestService.createRequest('/books/' + bookId);
+
+            return requestService.execute(request)
                 .then(data => {
-                    return new Promise(resolve => {
-                        resolve(context.dispatch('setBook', data));
-                    });
+                    return Promise.resolve(context.dispatch('setBook', data));
                 });
         },
 
@@ -104,15 +104,11 @@ const BookModule = {
             if (typeof book.electronicBook === 'string') {
                 promise = promise
                     .then(() => {
-                        return Xhr.buildGetUrl(book.electronicBook + '/raw');
-                    })
-                    .then(url => {
-                        return Xhr.fetch(url, {});
+                        const request = requestService.createRequest(book.electronicBook + '/raw');
+                        return requestService.execute(request);
                     })
                     .then(electronicBookRawData => {
-                        return new Promise(resolve => {
-                            resolve(book.electronicBook = new MedFile(null, electronicBookRawData['name'], electronicBookRawData['id'], false));
-                        });
+                        return Promise.resolve(book.electronicBook = new MedFile(null, electronicBookRawData['name'], electronicBookRawData['id'], false));
                     })
             }
 
@@ -123,14 +119,11 @@ const BookModule = {
             });
         },
         setCover(context, {file}) {
-            return Xhr.buildGetUrl('/api/book/covers')
-                .then(url => {
-                    return Xhr.sendFile(file, url);
-                })
+            return requestService.sendFile(file, '/book/covers')
                 .then(fileData => {
                     context.commit('setProperty', {
                         propertyName: 'cover',
-                        value: '/api/book/covers/' + fileData.id
+                        value: '/book/covers/' + fileData.id
                     });
                     return Promise.resolve(fileData['@id']);
                 });
@@ -139,7 +132,7 @@ const BookModule = {
             let bookId = context.getters.getProperty('id');
 
             let method = (typeof bookId === 'number') ? 'PUT' : 'POST';
-            let url = '/api/books' + (method === 'PUT' ? '/' + bookId : '');
+            let url = '/books' + (method === 'PUT' ? '/' + bookId : '');
             let promise = Promise.resolve();
 
             if (context.getters.getFlag('isElectronic') === false) {
@@ -150,12 +143,7 @@ const BookModule = {
             let electronicBook = context.state.book.electronicBook;
             if (electronicBook instanceof MedFile && electronicBook.isNew) {
                 promise = promise
-                    .then(() => {
-                        return Xhr.buildGetUrl('/api/electronic_books');
-                    })
-                    .then(url => {
-                        return Xhr.sendFile(electronicBook.file, url);
-                    })
+                    .then(() => requestService.sendFile(electronicBook.file, '/electronic_books'))
                     .then(electronicBookData => {
                         return new Promise((resolve => {
                             electronicBook.id = electronicBookData['id'];
@@ -174,33 +162,25 @@ const BookModule = {
                     if (context.state.book.electronicBook instanceof MedFile) {
                         context.commit('setProperty', {
                             propertyName: 'electronicBook',
-                            value: '/api/electronic_books/' + context.state.book.electronicBook.id
+                            value: '/electronic_books/' + context.state.book.electronicBook.id
                         });
                     }
 
-                    return Xhr.buildGetUrl(url);
-                })
-                .then(url => {
-                    return Xhr.fetch(url, {
-                        method: method,
-                        headers: new Headers({'Content-Type': 'application/json'}),
-                        body: JSON.stringify(context.state.book)
-                    })
+                    const request = requestService.createRequest(url, method)
+                        .addHeader('Content-Type', 'application/json')
+                        .setBody(context.state.book);
+                    return requestService.execute(request);
                 })
                 .then(book => {
                     context.dispatch('setBook', book);
 
                     //Delete old ebook if needed
                     if (context.state.eBookToDelete !== null) {
-                        Xhr.buildGetUrl('/api/electronic_books/' + context.state.eBookToDelete)
-                            .then(url => {
-                                Xhr.fetch(url, {
-                                    method: 'DELETE'
-                                });
-                            })
+                        const request = requestService.createRequest('electronic_books/' + context.state.eBookToDelete, 'DELETE');
+                        requestService.execute(request)
                             .then(() => {
                                 context.state.eBookToDelete = null;
-                            })
+                            });
                     }
                 });
         },
@@ -208,22 +188,14 @@ const BookModule = {
             if (!bookId) bookId = context.getters.getProperty('id');
             if ((typeof bookId === 'string' && bookId.length === 0) || typeof bookId !== 'number') throw "Book id invalid";
 
-            return Xhr.buildGetUrl('/api/books/' + bookId)
-                .then(url => {
-                    return Xhr.fetch(url, {
-                        method: 'DELETE'
-                    });
-                });
+            const request = requestService.createRequest('/books/' + bookId, 'DELETE');
+            return requestService.execute(request);
         },
         downloadEbook(context) {
             let file = context.state.book.electronicBook;
             if (file instanceof MedFile) {
-                Xhr.buildGetUrl('/api/book_files/' + file.id)
-                    .then(url => {
-                        return Xhr.fetch(url, {
-                            method: 'GET'
-                        });
-                    })
+                const request = requestService.createRequest('book_files/' + file.id);
+                return requestService.execute(request)
                     .then(response => new Response(response.body))
                     .then(response => response.blob())
                     .then(blob => URL.createObjectURL(blob))

@@ -1,17 +1,20 @@
 import {Mutation, getModule, Action, Module} from "vuex-module-decorators";
-import {AuthorEntity, BookEntity, BookElectronicEntity, GroupEntity, FileEntity} from "@/assets/ts/entity/module";
-import Xhr from "@/assets/js/xhr";
+import {BookEntity, BookElectronicEntity, FileEntity} from "@/assets/ts/entity/module";
 import store from "@/assets/js/store";
 import EntityModuleInterface from "@/assets/ts/store/EntityModuleInterface";
 import {BookModule} from "@/assets/ts/store/book/BookModule";
 import HistoryService from "@/assets/ts/service/HistoryService";
 import EntityProxyService from "@/assets/ts/service/EntityProxyService";
 import {bookPaperBaseUrl} from "@/assets/ts/store/book/BookPaperModule";
+import {container} from 'tsyringe';
+import RequestService from "@/assets/ts/service/RequestService";
+
+const requestService = container.resolve(RequestService);
 
 @Module({dynamic: true, name: 'bookElectronic', store: store, namespaced: true})
 class BookElectronicModule extends BookModule implements EntityModuleInterface<BookElectronicEntity> {
 
-    static baseUrl: string = "/api/electronic_books";
+    static baseUrl: string = "/electronic_books";
 
     protected proxy: EntityProxyService<BookElectronicEntity> = new EntityProxyService(
         this.flagService, this.historyService
@@ -28,12 +31,8 @@ class BookElectronicModule extends BookModule implements EntityModuleInterface<B
 
         let promise = undefined;
         if (typeof this.book.bookFile == 'object' && this.book.bookFile !== null) {
-            promise = Xhr.buildGetUrl('/api/book_files/' + this.book.bookFile.id)
-                .then(url => {
-                    return Xhr.fetch(url, {
-                        method: 'GET'
-                    });
-                })
+            const request = requestService.createRequest('/book_files/' + this.book.bookFile.id);
+            promise = requestService.execute(request)
                 .then(response => new Response(response.body))
                 .then(response => response.blob())
                 .then(blob => URL.createObjectURL(blob));
@@ -77,15 +76,11 @@ class BookElectronicModule extends BookModule implements EntityModuleInterface<B
         const method = this.bookService.isPersisted(this.book) ? 'PUT' : 'POST';
         const url = (bookTypeChanged ? bookPaperBaseUrl : BookElectronicModule.baseUrl)
             + (method === 'PUT' ? ('/' + this.book.id) : '');
+        const request = requestService.createRequest(url, method)
+            .setBody(this.bookService.prepareForUpload(this.book))
+            .addHeader('Content-Type', 'application/json');
 
-        return Xhr.buildGetUrl(url)
-            .then(url => {
-                return Xhr.fetch(url, {
-                    method: method,
-                    headers: new Headers({'Content-Type': 'application/json'}),
-                    body: this.bookService.prepareForUpload(this.book)
-                });
-            })
+        return requestService.execute(request)
             .then((response: BookElectronicEntity) => {
                 response.authors = this.book.authors;
                 this.set(response);
@@ -131,14 +126,13 @@ class BookElectronicModule extends BookModule implements EntityModuleInterface<B
 
         this.flagService.flags.readyToSave = false;
 
-        return Xhr.buildGetUrl('/api/book_files')
-            .then(url => Xhr.sendFile(file.file, url))
-            .then((response: FileEntity) => {
+        return requestService.sendFile(file.file, '/book_files')
+            .then((response: any) => {
                 this.context.commit('setBookFile', response);
                 this.flagService.flags.readyToSave = true;
                 return Promise.resolve(response);
             })
-            .catch(response => {
+            .catch((response: any) => {
                 this.flagService.flags.readyToSave = true;
                 return Promise.reject(response);
             });

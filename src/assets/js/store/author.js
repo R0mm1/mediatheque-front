@@ -1,4 +1,7 @@
-import Xhr from '../xhr';
+import {container} from 'tsyringe';
+import RequestService from "../../ts/service/RequestService";
+
+const requestService = container.resolve(RequestService);
 
 const AuthorModule = {
     namespaced: true,
@@ -39,31 +42,25 @@ const AuthorModule = {
     },
     actions: {
         load(context, authorId) {
-            return new Promise((resolve) => {
-                Xhr.buildGetUrl('/api/authors/' + authorId)
-                    .then(url => {
-                        return Xhr.fetch(url, {});
-                    })
-                    .then(data => {
-                        context.commit('setAuthor', data);
-                        return resolve();
-                    })
-            });
+            const request = requestService.createRequest('authors/' + authorId);
+
+            return requestService.execute(request)
+                .then(data => {
+                    context.commit('setAuthor', data);
+                    return Promise.resolve();
+                });
         },
         save(context) {
             let authorId = context.getters.getProperty('id');
 
             let method = (typeof authorId === 'number') ? 'PUT' : 'POST';
-            let url = '/api/authors' + (method === 'PUT' ? '/' + authorId : '');
+            let url = '/authors' + (method === 'PUT' ? '/' + authorId : '');
 
-            return Xhr.buildGetUrl(url)
-                .then(url => {
-                    return Xhr.fetch(url, {
-                        method: method,
-                        headers: new Headers({'Content-Type': 'application/json'}),
-                        body: JSON.stringify(context.state.author)
-                    })
-                });
+            const request = requestService.createRequest(url, method)
+                .setBody(context.state.author)
+                .addHeader('Content-Type', 'application/json');
+
+            return requestService.execute(request);
         }
     },
 };

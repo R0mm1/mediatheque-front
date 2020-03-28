@@ -1,7 +1,6 @@
-import {Action, getModule, Module, Mutation, VuexModule} from "vuex-module-decorators";
+import {Action, getModule, Module, Mutation} from "vuex-module-decorators";
 import {BookPaperEntity} from "@/assets/ts/entity/BookPaperEntity";
 import {BookModule} from "@/assets/ts/store/book/BookModule";
-import Xhr from "@/assets/js/xhr";
 import store from "@/assets/js/store";
 import EntityModuleInterface from "@/assets/ts/store/EntityModuleInterface";
 import EntityProxyService from "@/assets/ts/service/EntityProxyService";
@@ -11,7 +10,7 @@ import {bookElectronicBaseUrl} from "@/assets/ts/store/book/BookElectronicModule
 @Module({dynamic: true, name: 'bookPaper', store: store, namespaced: true})
 class BookPaperModule extends BookModule implements EntityModuleInterface<BookPaperEntity> {
 
-    static baseUrl: string = "/api/paper_books";
+    static baseUrl: string = "/paper_books";
 
     book: BookPaperEntity = this.bookService.getBasePaperBook();
 
@@ -50,14 +49,11 @@ class BookPaperModule extends BookModule implements EntityModuleInterface<BookPa
         const url = (bookTypeChanged ? bookElectronicBaseUrl : BookPaperModule.baseUrl)
             + (method === 'PUT' ? ('/' + this.book.id) : '');
 
-        return Xhr.buildGetUrl(url)
-            .then(url => {
-                return Xhr.fetch(url, {
-                    method: method,
-                    headers: new Headers({'Content-Type': 'application/json'}),
-                    body: this.bookService.prepareForUpload(this.book)
-                });
-            })
+        const request = this.requestService.createRequest(url, method)
+            .addHeader('Content-Type', 'application/json')
+            .setBody(this.bookService.prepareForUpload(this.book));
+
+        return this.requestService.execute(request)
             .then((response: BookPaperEntity) => {
                 response.authors = this.book.authors;
                 this.set(response);

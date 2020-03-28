@@ -5,7 +5,7 @@
         </template>
         <template v-slot:group_content>
             <Entities name="authors" label="Auteurs" :entities="authors" :entity-fields="['firstname', 'lastname']"
-                      entity-u-r-i="/api/authors" search-param="fullname"
+                      entity-u-r-i="/authors" search-param="fullname"
                       search-field-placeholder="Rechercher un auteur"
                       :form-creation-validation-action="createAuthorFromForm" form-creation-title="Nouvel auteur"
                       v-on:entity-removed="authorRemoved" v-on:entity-added="authorAdded">
@@ -39,13 +39,17 @@
     import InputText from "../../../../../form/elements/InputText";
     import Entities from "../../../../../form/elements/Entities";
     import Files from "../../../../../form/elements/Files";
-    import Xhr from "../../../../../../assets/js/xhr";
 
     import Select from "../../../../../form/elements/Select";
     import BookService from "../../../../../../assets/ts/service/BookService";
     import MedFile from "../../../../../../assets/js/medFile";
 
     import authorModule from "../../../../../../assets/ts/store/AuthorModule"
+
+    import {container} from 'tsyringe';
+    import RequestService from "../../../../../../assets/ts/service/RequestService";
+
+    const requestService = container.resolve(RequestService);
 
     export default {
         name: "GroupInformation",
@@ -86,10 +90,8 @@
                 this.bookStore.setOwner(parseInt(userId));
             },
             getUserListPromise() {
-                return Xhr.buildGetUrl('/api/users')
-                    .then(url => {
-                        return Xhr.fetch(url, {});
-                    })
+                const request = requestService.createRequest('/users');
+                return requestService.execute(request)
                     .then(response => {
                         let users = {};
                         response['hydra:member'].forEach(user => {

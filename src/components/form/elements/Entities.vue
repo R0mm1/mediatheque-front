@@ -48,11 +48,14 @@
 
 <script>
     import FormElement from "../FormElement";
-    import Xhr from '../../../assets/js/xhr';
     import Vue from 'vue';
     import InputText from "./InputText";
     import FormContainer from "../FormContainer";
     import InputButton from "./InputButton";
+    import {container} from 'tsyringe';
+    import RequestService from "../../../assets/ts/service/RequestService";
+
+    const requestService = container.resolve(RequestService);
 
     export default {
         name: "Entities",
@@ -104,12 +107,10 @@
                     let data = {};
                     data[this.searchParam] = search;
 
-                    Xhr.buildGetUrl(this.entityURI, data)
-                        .then(url => {
-                            return Xhr.fetch(url, {
-                                method: 'GET'
-                            });
-                        })
+                    const request = requestService.createRequest(this.entityURI)
+                        .setQueryParams(data);
+
+                    requestService.execute(request)
                         .then(response => {
                             this.proposals = {};
                             response['hydra:member'].forEach(entity => {

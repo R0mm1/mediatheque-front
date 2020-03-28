@@ -4,14 +4,17 @@ import {AuthorEntity} from "@/assets/ts/entity/AuthorEntity";
 import store from "@/assets/js/store";
 import FlagService from "@/assets/ts/service/FlagService";
 import EntityModuleFlagInterface from "@/assets/ts/store/EntityModuleFlagInterface";
-import Xhr from "@/assets/js/xhr";
 import EntityProxyService from "@/assets/ts/service/EntityProxyService";
 import HistoryService from "@/assets/ts/service/HistoryService";
+import {container} from 'tsyringe';
+import RequestService from "@/assets/ts/service/RequestService";
+
+const requestService = container.resolve(RequestService);
 
 @Module({dynamic: true, name: 'author', store: store, namespaced: true})
 class AuthorModule extends VuexModule implements EntityModuleInterface<AuthorEntity> {
 
-    protected baseUrl = "/api/authors";
+    protected baseUrl = "/authors";
     protected baseAuthor = {};
 
     author: AuthorEntity = this.baseAuthor;
@@ -41,10 +44,8 @@ class AuthorModule extends VuexModule implements EntityModuleInterface<AuthorEnt
     }
 
     @Action({rawError: true}) get(id: number): Promise<AuthorEntity | undefined> {
-        return Xhr.buildGetUrl(this.baseUrl + '/' + id)
-            .then(url => Xhr.fetch(url, {
-                method: 'GET'
-            }))
+        const request = requestService.createRequest(this.baseUrl + '/' + id);
+        return requestService.execute(request)
             .then(result => {
                 this.set(result);
                 return Promise.resolve(this.author);
@@ -54,13 +55,11 @@ class AuthorModule extends VuexModule implements EntityModuleInterface<AuthorEnt
     @Action save(): Promise<AuthorEntity | boolean> {
         const method = typeof this.author.id === 'undefined' ? 'POST' : 'PUT';
         const url = this.baseUrl + (method === 'PUT' ? '/' + this.author.id : '');
+        const request = requestService.createRequest(url, method)
+            .setBody(this.author)
+            .addHeader('Content-Type', 'application/json');
 
-        return Xhr.buildGetUrl(url)
-            .then(url => Xhr.fetch(url, {
-                method: method,
-                headers: new Headers({'Content-Type': 'application/json'}),
-                body: JSON.stringify(this.author)
-            }))
+        return requestService.execute(request)
             .then((author: AuthorEntity) => {
                 this.set(author);
                 return Promise.resolve(author);

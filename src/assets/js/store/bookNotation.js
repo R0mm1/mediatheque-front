@@ -1,10 +1,13 @@
-import Xhr from "../xhr";
+import {container} from 'tsyringe';
+import RequestService from "../../ts/service/RequestService";
+
+const requestService = container.resolve(RequestService);
 
 const BookNotationModule = {
     namespaced: true,
     state() {
         return {
-            endpoint: '/api/book_notations',
+            endpoint: '/book_notations',
             item: null
         }
     },
@@ -32,18 +35,15 @@ const BookNotationModule = {
         },
         create(state, {bookId, note}) {
             state.item = {
-                book: '/api/books/' + bookId,
+                book: '/books/' + bookId,
                 note: note
             };
         }
     },
     actions: {
         load({state, commit}, {params, method}) {
-            return Xhr.buildGetUrl(state.endpoint, params)
-                .then(url => Xhr.fetch(url, {
-                        method: method
-                    })
-                )
+            const request = requestService.createRequest(state.endpoint, method);
+            return requestService.execute(request)
                 .then(bookNotation => {
                     commit('set', bookNotation['hydra:member'][0]);
                 });
@@ -58,14 +58,11 @@ const BookNotationModule = {
             const isCreation = typeof state.item['id'] === 'undefined';
             const method = isCreation ? 'POST' : 'PUT';
             const url = state.endpoint + (isCreation ? '' : '/' + state.item['id']);
-            return Xhr.buildGetUrl(url)
-                .then(url => {
-                    return Xhr.fetch(url, {
-                        method: method,
-                        headers: new Headers({'Content-Type': 'application/json'}),
-                        body: JSON.stringify(state.item)
-                    });
-                })
+            const request = requestService.createRequest(url, method)
+                .addHeader('Content-Type', 'application/json')
+                .setBody(state.item);
+
+            return requestService.execute(request)
                 .then(response => {
                     commit('set', response);
                 });

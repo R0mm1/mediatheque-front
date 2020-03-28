@@ -2,8 +2,11 @@ import {Action, Module, Mutation, VuexModule} from "vuex-module-decorators";
 import store from "@/assets/js/store";
 import Column from "@/assets/ts/list/Column";
 import Vue from 'vue';
-import Xhr from "@/assets/js/xhr";
 import Filter from "@/assets/ts/list/Filter";
+import {container} from 'tsyringe';
+import RequestService from "@/assets/ts/service/RequestService";
+
+const requestService = container.resolve(RequestService);
 
 @Module({dynamic: true, name: 'list', store: store, namespaced: true})
 export default class ListModule extends VuexModule {
@@ -86,19 +89,18 @@ export default class ListModule extends VuexModule {
                 customFilters[customFilter.property] = customFilter.value;
             });
 
-            return Xhr.buildGetUrl(apiEndpoint, {
-                order: sort,
-                itemsPerPage: this._paginationRowsPerPage,
-                page: this._paginationCurrentPage,
-                ...search,
-                ...customFilters
-            }).then(url => {
-                this.setSearchQuery(url);
-                return Promise.resolve(url);
-            })
-                .catch(error => {
-                    console.error(error);
+            const request = requestService.createRequest(apiEndpoint)
+                .setQueryParams({
+                    order: sort,
+                    itemsPerPage: this._paginationRowsPerPage,
+                    page: this._paginationCurrentPage,
+                    ...search,
+                    ...customFilters
                 });
+
+            const url = request.getUrlBuilder().buildUrl();
+            this.setSearchQuery(url);
+            return Promise.resolve(url);
         }
     }
 }

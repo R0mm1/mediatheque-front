@@ -88,7 +88,6 @@
         },
         watch: {
             authorId(newAuthorId) {
-                console.log(newAuthorId);
                 if (newAuthorId) {
                     authorModule.get(newAuthorId);
                 }
@@ -96,7 +95,6 @@
         },
         created() {
             if (this.authorId) {
-                console.log(this.authorId);
                 authorModule.get(this.authorId);
             } else {
                 authorModule.new();

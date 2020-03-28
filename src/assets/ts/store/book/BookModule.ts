@@ -1,3 +1,4 @@
+import {container} from 'tsyringe';
 import {Action, Mutation, VuexModule} from "vuex-module-decorators";
 import {
     AuthorEntity,
@@ -5,22 +6,24 @@ import {
     GroupEntity,
     UserEntity
 } from "@/assets/ts/entity/module";
-import Xhr from "@/assets/js/xhr";
 import BookService from "@/assets/ts/service/BookService";
 import FlagService from "@/assets/ts/service/FlagService";
 import EntityModuleFlagInterface from "@/assets/ts/store/EntityModuleFlagInterface";
 import EventService from "@/assets/ts/service/EventService";
 import HistoryService from "@/assets/ts/service/HistoryService";
+import RequestService from "@/assets/ts/service/RequestService";
 
 export abstract class BookModule extends VuexModule {
 
     static EVENT_BOOK_SAVED = 'book-saved';
 
-    static baseUrl: string = '/api/books';
+    static baseUrl: string = '/books';
 
     protected bookService: BookService = new BookService();
 
     protected eventService: EventService = EventService.getService();
+
+    protected requestService = container.resolve(RequestService);
 
     historyService: HistoryService = new HistoryService();
 
@@ -34,10 +37,9 @@ export abstract class BookModule extends VuexModule {
     });
 
     protected getBase(id: number, baseUrl: string): Promise<BookEntity> {
-        return Xhr.buildGetUrl(baseUrl + '/' + id)
-            .then(url => Xhr.fetch(url, {
-                method: 'GET'
-            }));
+        const request = this.requestService.createRequest(baseUrl + '/' + id);
+
+        return this.requestService.execute(request);
     }
 
     abstract init(): void;
@@ -94,7 +96,7 @@ export abstract class BookModule extends VuexModule {
 
     @Mutation setOwner(owner: UserEntity | string | number) {
         if (typeof owner === "number") {
-            owner = '/api/users/' + owner;
+            owner = '/users/' + owner;
         }
         this.book.owner = owner;
     }
@@ -103,6 +105,7 @@ export abstract class BookModule extends VuexModule {
         this.book.cover = cover;
     }
 
+    //todo: to be removed
     @Mutation addGroup(group: GroupEntity) {
         this.book.groups.push(group);
     }
@@ -122,14 +125,13 @@ export abstract class BookModule extends VuexModule {
 
         this.flagService.flags.readyToSave = false;
 
-        return Xhr.buildGetUrl('/api/book/covers')
-            .then(url => Xhr.sendFile(file.file, url))
-            .then((response: FileEntity) => {
+        return this.requestService.sendFile(file.file, '/book/covers')
+            .then((response: Response) => {
                 this.context.commit('setCover', response);
                 this.flagService.flags.readyToSave = true;
                 return Promise.resolve(response);
             })
-            .catch(response => {
+            .catch((response: any) => {
                 this.flagService.flags.readyToSave = true;
                 return Promise.reject(response);
             });

@@ -2,7 +2,9 @@
     <FormElement :label="label" :name="name" :container-custom-classes="'form_element_password'">
 
         <template v-slot:element_content>
+            <!--todo: input-password-changed should be removed-->
             <input type="password" :name="name" :placeholder="placeholder" v-model="password"
+                   v-on:input="$emit('input', password)"
                    v-on:change="$emit('input-password-changed', name, password)"/>
         </template>
 

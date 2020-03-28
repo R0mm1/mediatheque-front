@@ -1,9 +1,12 @@
 import {Action, Module, VuexModule, getModule, Mutation} from "vuex-module-decorators";
 import store from "@/assets/js/store";
-import Xhr from "@/assets/js/xhr";
 import {GroupEntity} from "@/assets/ts/entity/GroupEntity";
 import {BookEntity} from "@/assets/ts/entity/module";
 import EntityService from "@/assets/ts/service/EntityService";
+import {container} from 'tsyringe';
+import RequestService from "@/assets/ts/service/RequestService";
+
+const requestService = container.resolve(RequestService);
 
 @Module({dynamic: true, name: 'group', store: store, namespaced: true})
 class GroupModule extends VuexModule {
@@ -32,33 +35,30 @@ class GroupModule extends VuexModule {
         this.group = group;
     }
 
-    @Action({rawError: true}) list(queryArgs: object) {
-        return Xhr.buildGetUrl('/api/reference_groups', queryArgs)
-            .then(url => Xhr.fetch(url, {
-                method: 'GET'
-            }));
+    @Action({rawError: true}) list(queryArgs: { [index: string]: { [index: string]: string } | string }) {
+        const request = requestService.createRequest('/reference_groups')
+            .setQueryParams(queryArgs);
+
+        return requestService.execute(request);
     }
 
     @Action save() {
         const group = JSON.parse(JSON.stringify(this.group));
 
         const method = typeof group.id !== 'undefined' ? 'PUT' : 'POST';
-        const url = '/api/reference_groups' + (method === 'PUT' ? '/' + group.id : '');
+        const url = '/reference_groups' + (method === 'PUT' ? '/' + group.id : '');
+        const request = requestService.createRequest(url, method)
+            .addHeader('Content-Type', 'application/json')
+            .setBody(
+                (() => {
+                    group.books = group.books.map((book: BookEntity | string) => {
+                        return this.entityService.getIri(book);
+                    });
+                    return group;
+                })()
+            );
 
-        return Xhr.buildGetUrl(url, {})
-            .then(url => {
-                return Xhr.fetch(url, {
-                    method: method,
-                    headers: new Headers({'Content-Type': 'application/json'}),
-                    body: (() => {
-                        // @ts-ignore
-                        group.books = group.books.map((book: BookEntity | string) => {
-                            return this.entityService.getIri(book);
-                        });
-                        return JSON.stringify(group);
-                    })()
-                });
-            })
+        return requestService.execute(request);
     }
 }
 

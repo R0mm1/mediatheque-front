@@ -10,9 +10,12 @@
 </template>
 
 <script>
-    import Xhr from "../../../../../../assets/js/xhr";
     import Group from "../../../../../popup/Group";
     import InputPicture from "../../../../../form/elements/InputPicture";
+    import {container} from 'tsyringe';
+    import RequestService from "../../../../../../assets/ts/service/RequestService";
+
+    const requestService = container.resolve(RequestService);
 
     export default {
         name: "GroupPicture",
@@ -42,12 +45,14 @@
                 if (this.cover instanceof File) {
                     setFile(this.cover);
                 } else {
-                    Xhr.buildGetUrl(this.cover)
-                        .then(url => {
-                            return Xhr.fetch(url, {});
-                        })
+                    const request = requestService.createRequest(this.cover);
+                    request.getUrlBuilder().setSkipCommonUrlBase(true);
+                    requestService.execute(request)
                         .then(response => response.blob())
-                        .then(data => setFile(data));
+                        .then(data => setFile(data))
+                        .catch(error=>{
+                            console.error(error);
+                        });
                 }
             }
         },

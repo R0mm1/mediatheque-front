@@ -9,8 +9,8 @@
                 </template>
 
                 <template v-slot:form_body>
-                    <InputText ref="login" label="Identifiant"></InputText>
-                    <InputPassword ref="password" label="Mot de passe"></InputPassword>
+                    <InputText v-model="userLogin" label="Identifiant"></InputText>
+                    <InputPassword v-model="userPassword" label="Mot de passe"></InputPassword>
                 </template>
 
                 <template v-slot:action_cancel>
@@ -25,18 +25,33 @@
 </template>
 
 <script>
-    import Xhr from './../../../assets/js/xhr';
+    import {container} from 'tsyringe';
+
+    import config from './../../../../mediatheque';
+
     import Page from './../Page';
     import FormContainer from "../../form/FormContainer";
     import InputText from "../../form/elements/InputText";
     import InputPassword from "../../form/elements/InputPassword";
+    import AuthenticationService from "../../../assets/ts/service/AuthenticationService";
+
+    const authenticationService =  container.resolve(AuthenticationService);
 
     export default {
         name: "Login",
         components: {InputText, InputPassword, FormContainer, Page},
+        data(){
+          return {
+              userLogin: '',
+              userPassword: ''
+          }
+        },
         methods: {
             login() {
-                Xhr.login(this.$refs.login.getValue(), this.$refs.password.getValue());
+                authenticationService.login(this.userLogin, this.userPassword)
+                .then(()=>{
+                    window.location = config.default.page;
+                });
             }
         }
     }

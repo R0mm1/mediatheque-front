@@ -1,4 +1,7 @@
-import Xhr from '../../xhr';
+import {container} from 'tsyringe';
+import RequestService from "../../../ts/service/RequestService";
+
+const requestService = container.resolve(RequestService);
 
 const UserCommon = {
     state() {
@@ -23,16 +26,12 @@ const UserCommon = {
         setPassword(context, newPassword) {
             if (!context.state.user.id) throw 'User not loaded';
 
-            return Xhr.buildGetUrl('/api/users/' + context.state.user.id)
-                .then(url => {
-                    return Xhr.fetch(url, {
-                        method: 'PUT',
-                        headers: new Headers({'Content-Type': 'application/json'}),
-                        body: JSON.stringify({
-                            plainPassword: newPassword
-                        })
-                    });
+            const request = requestService.createRequest('/users/' + context.state.user.id, 'PUT')
+                .addHeader('Content-Type', 'application/json')
+                .setBody({
+                    plainPassword: newPassword
                 });
+            return requestService.execute(request);
         }
     }
 };

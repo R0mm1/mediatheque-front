@@ -1,6 +1,9 @@
 import UserCommon from './common';
-import Xhr from "../../xhr";
 import Vue from 'vue';
+import {container} from 'tsyringe';
+import RequestService from "../../../ts/service/RequestService";
+
+const requestService = container.resolve(RequestService);
 
 const LoggedInModule = {
     namespaced: true,
@@ -17,16 +20,12 @@ const LoggedInModule = {
     },
     actions: {
         load(context) {
-            return Xhr.buildGetUrl('/api/users/loggedIn')
-                .then(url => {
-                    return Xhr.fetch(url, {
-                        method: 'GET'
-                    });
-                })
+            const request = requestService.createRequest('/users/loggedIn');
+            return requestService.execute(request)
                 .then(user => {
                     Vue.set(context.state, 'user', user);
                 })
-                .catch(error=>{
+                .catch(error => {
                     console.error(error);
                 });
         },

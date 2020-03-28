@@ -44,17 +44,18 @@
     import {Component, Prop, Vue, Watch} from "vue-property-decorator";
     import {getModule} from "vuex-module-decorators";
 
-    import Xhr from './../../assets/js/xhr';
-
     import Column from "@/assets/ts/list/Column";
     import RowAction from "@/assets/ts/list/RowAction";
     import LeftActionBarProperties from '@/assets/ts/list/LeftActionBarProperties';
-    import SelectDescriptor from '@/assets/ts/form/SelectDescriptor';
     import PaginationHelper from "@/assets/js/paginationHelper";
     import Filter from "@/assets/ts/list/Filter";
 
     import ListModule from '@/assets/ts/store/ListModule';
 
+    import {container} from 'tsyringe';
+    import RequestService from "@/assets/ts/service/RequestService";
+
+    const requestService = container.resolve(RequestService);
     const listModule = getModule(ListModule);
 
     @Component({
@@ -97,13 +98,14 @@
         load(fromCache: boolean = true, resetPagination: boolean = false) {
             this.isLoading = true;
 
-            if(resetPagination)
+            if (resetPagination)
                 listModule.setPaginationCurrentPage(1);
 
             listModule.computeSearchString({getFromCache: fromCache, apiEndpoint: this.apiEndpoint})
                 .then(() => {
-                    const url = listModule.searchQuery;
-                    return Xhr.fetch(url, {method: 'GET'});
+                    return requestService.execute(
+                        requestService.createRequest(listModule.searchQuery).setSkipUrlBuilding(true)
+                    );
                 })
                 .then((data: { [index: string]: any }) => {
                     this.listData = data['hydra:member'];

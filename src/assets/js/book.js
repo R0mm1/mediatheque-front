@@ -1,12 +1,14 @@
-import Xhr from './xhr';
+import {container} from 'tsyringe';
+import RequestService from "../ts/service/RequestService";
+
+const requestService = container.resolve(RequestService);
 
 export default {
     downloadEBook: function (bookId) {
         let filename = 'book.epub'; //default file name
 
-        Xhr.fetch('/api/book/' + bookId + '/ebook', {
-            method: 'GET'
-        })
+        const request = requestService.createRequest('/book/' + bookId + '/ebook');
+        requestService.execute(request)
             .then(response => {
 
                 //Retrieving file name from Content-Disposition Header
@@ -30,8 +32,7 @@ export default {
             });
     },
     deleteBook(bookId) {
-        return Xhr.fetch('/api/book/' + bookId, {
-            method: 'DELETE'
-        });
+        const request = requestService.createRequest('/book/' + bookId, 'DELETE');
+        return requestService.execute(request);
     }
 }
