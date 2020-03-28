@@ -17,10 +17,22 @@ export default class Request {
         this.method = method;
     }
 
+    getMethod() {
+        return this.method;
+    }
+
+    getUrl() {
+        return this.urlBuilder.getUrl();
+    }
+
     setBody(body: any) {
         if (typeof body !== "string" && !(body instanceof FormData)) body = JSON.stringify(body);
         this.body = body;
         return this;
+    }
+
+    getBody() {
+        return this.body;
     }
 
     setQueryParams(queryParams: UrlBuilderQueryParamInterface) {
@@ -40,6 +52,10 @@ export default class Request {
     removeHeader(name: string) {
         this.headers.delete(name);
         return this;
+    }
+
+    getHeaders() {
+        return this.headers;
     }
 
     setSkipUrlBuilding(skipUrlBuilding: boolean) {

@@ -41,7 +41,7 @@ exports[`Select2 renders correctly 1`] = `
                 My first option
               </div>
               <input
-                aria-readonly="true"
+                aria-readonly="false"
                 autocomplete="off"
                 id="input-3"
                 readonly="readonly"
@@ -70,10 +70,7 @@ exports[`Select2 renders correctly 1`] = `
           <div
             class="v-menu"
           >
-            <div
-              class="v-menu__content theme--light "
-              style="max-height: 304px; min-width: 0px; max-width: auto; top: 0px; left: 0px; transform-origin: top left; z-index: 0; display: none;"
-            />
+            <!---->
           </div>
         </div>
         <div

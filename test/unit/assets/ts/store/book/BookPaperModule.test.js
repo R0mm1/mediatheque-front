@@ -1,14 +1,20 @@
+import "reflect-metadata";
 import {createLocalVue} from "@vue/test-utils";
 import Vuex from 'vuex';
 
 import bookPaperModule from "@/assets/ts/store/book/BookPaperModule"
 import BookService from "@/assets/ts/service/BookService";
-import Xhr from '@/assets/js/xhr';
+import Request from "@/assets/ts/objects/Request";
+import UrlBuilder from "@/assets/ts/objects/UrlBuilder";
+
+import {container} from 'tsyringe';
+import RequestService from "@/assets/ts/service/RequestService";
 
 global.Headers = global.Headers || require("fetch-headers");
 
 describe('BookPaperModule', () => {
     let bookService = new BookService();
+    let requestService = container.resolve(RequestService);
 
     beforeEach(() => {
         const localVue = createLocalVue();
@@ -66,10 +72,10 @@ describe('BookPaperModule', () => {
 
     it('Correctly handle owner modifications', () => {
         bookPaperModule.setOwner(1);
-        expect(bookPaperModule.book.owner).toBe('/api/users/1');
+        expect(bookPaperModule.book.owner).toBe('/users/1');
 
-        bookPaperModule.setOwner('/api/users/2');
-        expect(bookPaperModule.book.owner).toBe('/api/users/2');
+        bookPaperModule.setOwner('/users/2');
+        expect(bookPaperModule.book.owner).toBe('/users/2');
 
         const owner3 = {
             id: 3,
@@ -126,7 +132,7 @@ describe('BookPaperModule', () => {
             ]
         };
 
-        Xhr.fetch = jest.fn().mockImplementationOnce(() => {
+        requestService.execute = jest.fn().mockImplementationOnce(() => {
             return Promise.resolve(book);
         });
 
@@ -140,7 +146,7 @@ describe('BookPaperModule', () => {
 
     it('Correctly save book', async () => {
 
-        Xhr.fetch = jest.fn().mockImplementationOnce((url, params) => {
+        requestService.execute = jest.fn().mockImplementationOnce((url, params) => {
             return Promise.resolve({
                 title: 'Le Grand Meaulnes',
                 authors: [
@@ -169,16 +175,18 @@ describe('BookPaperModule', () => {
         bookPaperModule.set(book);
         await bookPaperModule.save();
 
-        expect(Xhr.fetch.mock.calls[0]).toBeDefined();
-        const fetchCall = Xhr.fetch.mock.calls[0];
+        expect(requestService.execute.mock.calls[0]).toBeDefined();
+        const fetchCall = requestService.execute.mock.calls[0];
 
-        expect(fetchCall[0]).toMatch(/api\/paper_books$/);
-        expect(fetchCall[1].method).toBeDefined();
-        expect(fetchCall[1].headers).toBeDefined();
-        expect(fetchCall[1].body).toBeDefined();
+        expect(fetchCall[0]).toBeInstanceOf(Request);
+        expect(fetchCall[0].getUrl()).toBeDefined();
+        expect(fetchCall[0].getHeaders()).toBeDefined();
+        expect(fetchCall[0].getBody()).toBeDefined();
+        expect(fetchCall[0].getUrlBuilder()).toBeInstanceOf(UrlBuilder);
+        expect(fetchCall[0].getUrlBuilder().getUrl()).toMatch(/\/paper_books$/);
 
-        expect(fetchCall[1].method).toBe('POST');
-        expect(JSON.parse(fetchCall[1].body)).toStrictEqual({
+        expect(fetchCall[0].getMethod()).toBe('POST');
+        expect(JSON.parse(fetchCall[0].getBody())).toStrictEqual({
             title: 'Le Grand Meaulnes',
             authors: [
                 '/api/authors/1'
