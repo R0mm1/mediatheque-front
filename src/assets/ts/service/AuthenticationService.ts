@@ -20,6 +20,13 @@ export default class AuthenticationService {
             "password": password
         });
         return request.trigger()
+            .then(response => {
+                if (response.status !== 200) {
+                    return Promise.reject(response.status);
+                } else {
+                    return Promise.resolve(response);
+                }
+            })
             .then(response => response.json())
             .then((response: any) => this.handleTokensInResponse(response));
     }

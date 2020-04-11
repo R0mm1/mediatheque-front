@@ -35,30 +35,40 @@
     import InputPassword from "../../form/elements/InputPassword";
     import AuthenticationService from "../../../assets/ts/service/AuthenticationService";
 
-    const authenticationService =  container.resolve(AuthenticationService);
+    const authenticationService = container.resolve(AuthenticationService);
 
     export default {
         name: "Login",
         components: {InputText, InputPassword, FormContainer, Page},
-        data(){
-          return {
-              userLogin: '',
-              userPassword: ''
-          }
+        data() {
+            return {
+                userLogin: '',
+                userPassword: ''
+            }
         },
         methods: {
             login() {
                 authenticationService.login(this.userLogin, this.userPassword)
-                .then(()=>{
-                    window.location = config.default.page;
-                });
+                    .then(() => {
+                        window.location = config.default.page;
+                    })
+                    .catch(httpErrorCode => {
+
+                        const message = (httpErrorCode === 401) ? "Identifiant ou mot de passe invalide" : "Une erreur est survenue";
+
+                        this.$toasted.show(message, {
+                            ...config.default.notification_settings,
+                            type: 'error',
+                            icon: 'fa-times',
+                        });
+                    });
             }
         }
     }
 </script>
 
 <style scoped lang="scss">
-    .med_form{
+    .med_form {
         width: 500px;
         margin: 100px auto;
         box-shadow: 1px 1px 5px #e4dccc;
