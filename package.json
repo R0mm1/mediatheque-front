@@ -15,7 +15,7 @@
     "@types/lodash": "^4.14.149",
     "core-js": "3.6.4",
     "install": "^0.13.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.13",
     "npm": "^6.13.4",
     "reflect-metadata": "^0.1.13",
     "sass": "^1.22.12",
