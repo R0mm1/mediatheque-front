@@ -111,7 +111,7 @@ export abstract class BookModule extends VuexModule {
     }
 
     @Mutation unlinkCover() {
-        this.book.cover = undefined;
+        this.book.cover = null;
         this.tempNewCover = null;
     }
 

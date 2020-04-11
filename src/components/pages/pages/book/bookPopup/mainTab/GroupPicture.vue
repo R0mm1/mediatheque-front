@@ -23,34 +23,39 @@
         props: {bookStore: {required: true}},
         data() {
             return {
-                src: ''
+                src: Promise.resolve(''),
+                downloading: false
             }
         },
         methods: {
             pictureChanged(newFile) {
                 this.bookStore.unlinkCover();
-                this.bookStore.linkNewCover({
-                    file: newFile,
-                    name: newFile.name
-                });
+                if (typeof newFile !== 'undefined') {
+                    this.bookStore.linkNewCover({
+                        file: newFile,
+                        name: newFile.name
+                    });
+                }
             },
             load() {
                 if (this.cover.length === 0) return;
 
                 const setFile = (file) => {
                     const urlCreator = window.URL || window.webkitURL;
-                    this.src = urlCreator.createObjectURL(file);
+                    return Promise.resolve(urlCreator.createObjectURL(file));
                 };
 
+
                 if (this.cover instanceof File) {
-                    setFile(this.cover);
+                    this.src = setFile(this.cover);
                 } else {
+                    this.downloading = true;
                     const request = requestService.createRequest(this.cover);
                     request.getUrlBuilder().setSkipCommonUrlBase(true);
-                    requestService.execute(request)
+                    this.src = requestService.execute(request)
                         .then(response => response.blob())
                         .then(data => setFile(data))
-                        .catch(error=>{
+                        .catch(error => {
                             console.error(error);
                         });
                 }

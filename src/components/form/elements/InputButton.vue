@@ -21,12 +21,14 @@
             name: {default: ''},
             disabled: {default: false},
             customClasses: {default: () => [], type: Array},
-            labelCustomClasses: {default: ''}
+            labelCustomClasses: {default: ''},
+            bStyle: {type: String, default: 'normal'}
         },
         computed: {
             cCustomClasses() {
                 let classes = this.customClasses;
                 classes.push('form_element_button');
+                classes.push('style_' + this.bStyle);
                 return classes;
             }
         }
@@ -43,6 +45,7 @@
         padding: 7px;
         font-size: .9rem;
         transition: all .3s;
+        border: 1px solid transparent;
 
         input {
             display: none;
@@ -58,8 +61,18 @@
             }
         }
 
-        &:hover {
+        &.style_normal{
+            &:hover {
+                background-color: $shade2;
+            }
+        }
+
+        &.style_negative{
             background-color: $shade2;
+            border: 1px solid $shade2;
+            &:hover{
+                background-color: transparent;
+            }
         }
     }
 </style>

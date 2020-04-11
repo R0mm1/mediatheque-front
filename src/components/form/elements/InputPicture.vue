@@ -7,16 +7,17 @@
             <div class="picture_preview" v-on:click="displayFileChooser"
                  :style="'background-image: url('+pictureSrc+')'">
                 <Loader class="loader" v-if="isPictureLoading" :type="'s'"></Loader>
-                <div class="preview_default" v-if="displayDefault && !isPictureLoading">
+                <div class="preview_default" v-if="!hasPictureLoaded && !isPictureLoading">
                     <i class="far fa-image"></i>
                 </div>
             </div>
             <div class="picture_buttons">
-                <InputButton :label-custom-classes="'fas fa-file-upload'"
+                <InputButton label-custom-classes="fas fa-file-upload" b-style="negative"
                              v-on:click.native="displayFileChooser"></InputButton>
-                <InputButton :label-custom-classes="'fas fa-file-download'" v-if="false"></InputButton>
-                <!--todo: à faire -->
-                <InputButton :label-celementustom-classes="'fas fa-trash-alt'" v-on:click.native="clear"></InputButton>
+                <InputButton label-custom-classes="fas fa-file-download" b-style="negative"
+                             v-on:click.native="download" :disabled="!hasPictureLoaded"></InputButton>
+                <InputButton label-custom-classes="fas fa-trash-alt" b-style="negative"
+                             v-on:click.native="clear" :disabled="!hasPictureLoaded"></InputButton>
             </div>
             <input ref="inputFile" type="file" :name="name" v-on:change="reloadPreview">
         </template>
@@ -34,13 +35,12 @@
         components: {Loader, InputButton, FormElement},
         props: {
             name: {type: String, default: ''},
-            src: {type: String, required: true},
+            src: {type: Promise, required: true},
             autofillSrcOnChange: {Boolean, default: false}
         },
         data() {
             return {
                 pictureSrc: '',
-                displayDefault: true,
                 isPictureLoading: false
             }
         },
@@ -53,8 +53,6 @@
 
                 let file = e.target.files[0];
 
-                this.displayDefault = false;
-
                 if (this.autofillSrcOnChange) {
                     this.pictureSrc = URL.createObjectURL(file);
                 }
@@ -64,11 +62,41 @@
                 this.isPictureLoading = false;
             },
             clear() {
-                this.displayDefault = true;
+                if (!this.hasPictureLoaded) {
+                    return;
+                }
+
+                this.pictureSrc = '';
+                this.$emit('picture-changed', undefined);
+            },
+            download() {
+                if (!this.hasPictureLoaded) {
+                    return;
+                }
+
+                let a = document.createElement('a');
+                a.href = this.pictureSrc;
+                a.download = 'picture';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
             },
             setSrc(newSrc) {
-                this.pictureSrc = newSrc;
-                this.displayDefault = (newSrc.length === 0);
+                this.isPictureLoading = true;
+                Promise.resolve(newSrc)
+                    .then(src => {
+                        this.pictureSrc = src;
+                        this.isPictureLoading = false;
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        this.isPictureLoading = false;
+                    });
+            }
+        },
+        computed: {
+            hasPictureLoaded() {
+                return this.pictureSrc.length > 0;
             }
         },
         watch: {
@@ -83,6 +111,7 @@
 </script>
 
 <style scoped lang="scss">
+    @import "../../../assets/scss/colors";
 
     input[type="file"] {
         display: none;
@@ -105,14 +134,23 @@
         }
 
         .loader {
-            height: 30px;
-            position: absolute;
-            right: 0;
-            bottom: 10px;
+            height: 50px;
+            margin: auto;
         }
     }
 
     .picture_buttons {
-        text-align: center;
+        display: flex;
+        justify-content: center;
+        border-top: 1px solid $shade2;
+        padding-top: 7px;
+
+        .form_element_button {
+            width: 15px;
+            margin: 0px 3px;
+            height: 15px;
+            text-align: center;
+            border-radius: 5px;
+        }
     }
 </style>

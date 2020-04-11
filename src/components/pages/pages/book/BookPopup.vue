@@ -81,13 +81,14 @@
                 this.checkStore();
                 this.loaded = false;
 
+                this.bookStore.init();
+
                 if (typeof bookId === 'undefined') bookId = this.bookId;
                 if (bookId) {
                     this.bookStore.get(bookId).then(() => {
                         this.loaded = true;
                     });
                 } else {
-                    this.bookStore.init();
                     this.loaded = true;
                 }
             },
