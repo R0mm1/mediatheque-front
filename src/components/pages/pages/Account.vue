@@ -6,14 +6,12 @@
                     Modifier le mot de passe
                 </template>
 
-                <template v-slot:form_body v-if="!cIsLoading">
-                    <Loader v-if="cIsLoading"></Loader>
+                <template v-slot:form_body v-if="!isLoading">
+                    <Loader v-if="isLoading"></Loader>
 
-                    <template v-if="!cIsLoading">
-                        <InputPassword name="passwd" label="Mot de passe"
-                                       v-on:input-password-changed="setValue"></InputPassword>
-                        <InputPassword name="passwdRepeat" label="Répéter"
-                                       v-on:input-password-changed="setValue"></InputPassword>
+                    <template v-if="!isLoading">
+                        <InputPassword name="passwd" label="Mot de passe" v-model="passwd"></InputPassword>
+                        <InputPassword name="passwdRepeat" label="Répéter" v-model="passwdRepeat"></InputPassword>
                     </template>
                 </template>
 
@@ -29,12 +27,7 @@
     import InputPassword from "../../form/elements/InputPassword";
     import Loader from "../../widgets/Loader";
 
-    import store from '../../../assets/js/store';
-    import LoggedInModule from '../../../assets/js/store/user/loggedIn';
-
-    if (!store.state['loggedIn']) {
-        store.registerModule('loggedIn', LoggedInModule);
-    }
+    import userModule from '../../../assets/ts/store/user/UserModule';
 
     export default {
         name: "Account",
@@ -50,38 +43,34 @@
             checkPasswd() {
                 this.hasError = this.passwdRepeat !== null && this.passwd !== this.passwdRepeat;
             },
-            setValue(inputName, value) {
-                this[inputName] = value;
-            },
             isValid() {
                 return this.passwdRepeat !== null && !this.hasError;
             },
             save() {
-                this.$store.dispatch('loggedIn/setPassword', this.passwd);
+                userModule.setPassword(this.passwd);
             }
         },
         computed: {
-            cUserId() {
-                return this.$store.getters['loggedIn/getProperty']('id')
+            userId() {
+                return userModule.user.id;
             },
-            cIsLoading() {
-                return this.cUserId.toString().length === 0;
+            isLoading() {
+                return typeof this.userId !== 'undefined' && this.userId.toString().length === 0;
             }
         },
         watch: {
             passwd(newVal) {
-                this.passwd = newVal;
+                // this.passwd = newVal;
                 this.checkPasswd();
             },
             passwdRepeat(newVal) {
-                this.passwdRepeat = newVal;
+                // this.passwdRepeat = newVal;
                 this.checkPasswd();
             }
         },
         created() {
-            this.$store.dispatch('loggedIn/load');
-        },
-        store
+            userModule.getLoggedIn();
+        }
     }
 </script>
 
