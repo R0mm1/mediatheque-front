@@ -88,11 +88,20 @@
 
             .form_element_button2 {
                 padding: 0 !important;
-                background: transparent !important;
 
-                input {
+                button {
+                    background: transparent !important;
                     text-align: left;
                     font-size: initial;
+
+                    .feb2_stringContent {
+                        padding: 0 !important;
+                        height: 30px;
+                    }
+                }
+
+                .feb2_icon {
+                    display: none;
                 }
             }
         }

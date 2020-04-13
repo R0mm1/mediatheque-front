@@ -5,7 +5,7 @@ exports[`User renders correctly 1`] = `
   id="headerUserElement"
 >
   <div
-    class="form_element form_element_button"
+    class="form_element form_element_button style_normal"
   >
     <label
       class="element_label fas fa-user-circle"

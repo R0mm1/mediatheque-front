@@ -5,7 +5,7 @@ exports[`TopButtonBar renders correctly 1`] = `
   id="med_popup_topbuttonbar"
 >
   <div
-    class="form_element main selected form_element_button"
+    class="form_element main selected form_element_button style_normal"
   >
     <label
       class="element_label fas fa-book"
@@ -26,7 +26,7 @@ exports[`TopButtonBar renders correctly 1`] = `
     </div>
   </div>
   <div
-    class="form_element social form_element_button"
+    class="form_element social form_element_button style_normal"
   >
     <label
       class="element_label fas fa-comment"
@@ -48,7 +48,7 @@ exports[`TopButtonBar renders correctly 1`] = `
   </div>
    
   <div
-    class="form_element form_element_button"
+    class="form_element form_element_button style_normal"
   >
     <label
       class="element_label fas fa-times"
@@ -76,7 +76,7 @@ exports[`TopButtonBar renders correctly after tab changed 1`] = `
   id="med_popup_topbuttonbar"
 >
   <div
-    class="form_element main form_element_button"
+    class="form_element main form_element_button style_normal"
   >
     <label
       class="element_label fas fa-book"
@@ -97,7 +97,7 @@ exports[`TopButtonBar renders correctly after tab changed 1`] = `
     </div>
   </div>
   <div
-    class="form_element social selected form_element_button"
+    class="form_element social selected form_element_button style_normal"
   >
     <label
       class="element_label fas fa-comment"
@@ -119,7 +119,7 @@ exports[`TopButtonBar renders correctly after tab changed 1`] = `
   </div>
    
   <div
-    class="form_element form_element_button"
+    class="form_element form_element_button style_normal"
   >
     <label
       class="element_label fas fa-times"

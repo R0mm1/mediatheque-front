@@ -4,20 +4,20 @@
 
             <div class="row_content">{{element.content}}</div>
 
-            <InputButton v-for="(action, actionIndex) in actions" :key="actionIndex"
-                         :custom-classes="['row_action']" :label-custom-classes="action.buttonClass"
-                         v-on:click.native="action.action(element.id)">
-            </InputButton>
+            <Button v-for="(action, actionIndex) in actions" :key="actionIndex"
+                    :button-descriptor="action.buttonDescriptor"
+                    v-on:click.native="action.action(element.id)">
+            </Button>
         </div>
     </div>
 </template>
 
 <script>
-    import InputButton from "../form/elements/InputButton";
+    import Button from "../form/elements/Button";
 
     export default {
         name: "SimpleList",
-        components: {InputButton},
+        components: {Button},
         props: {
             //An array of Element objects
             elements: {default: () => []},
@@ -26,8 +26,13 @@
         }
     }
 
-    let Action = function (buttonClass, action) {
-        this.buttonClass = buttonClass;
+    let Action = function (buttonDescriptor, action) {
+        this.buttonDescriptor = buttonDescriptor;
+        this.buttonDescriptor
+            .setStyle('negative')
+            .addCustomClass('row_action')
+            .setRoundedCorner(true)
+            .setIsIconButon(true, 24);
         this.action = action;
     };
 
@@ -44,7 +49,8 @@
 
     .list_row {
         display: flex;
-        height: 24px;
+        height: 30px;
+        line-height: 30px;
         transition: all 0.3s;
         border-style: solid;
         border-width: 1px 0 1px 0;
@@ -54,19 +60,13 @@
             border-color: $shade1;
         }
 
-        .form_element_button {
-            height: 14px;
-            width: 14px;
+        .form_element_button2 {
             font-size: .8rem;
-            padding: 3px;
             margin: 2px;
-            border-radius: 50%;
-            text-align: center;
         }
     }
 
     .row_content {
         flex: 1;
-        line-height: 24px;
     }
 </style>
