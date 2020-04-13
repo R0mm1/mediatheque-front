@@ -6,8 +6,8 @@
             <SimpleList :elements="cListElements" :actions="cListRowActions"></SimpleList>
 
             <div class="files_buttons">
-                <InputButton v-if="!isFileLoading" name="add" value="Ajouter" :disabled="cMaxFilesReached"
-                             v-on:click.native="displayFileChooser"></InputButton>
+                <Button v-if="!isFileLoading && !cMaxFilesReached" :button-descriptor="buttonAddDescriptor"
+                        v-on:click.native="displayFileChooser"></Button>
             </div>
 
             <Loader class="loader" v-if="isFileLoading" type="s"></Loader>
@@ -21,14 +21,15 @@
 
 <script>
     import FormElement from "../FormElement";
-    import InputButton from "./InputButton";
     import Loader from "../../widgets/Loader";
     import MedFile from "../../../assets/js/medFile";
     import SimpleList, {Element, Action} from "../../widgets/SimpleList";
+    import ButtonDescriptor from "../../../assets/ts/form/ButtonDescriptor";
+    import Button from "./Button";
 
     export default {
         name: "Files",
-        components: {SimpleList, Loader, InputButton, FormElement},
+        components: {Button, SimpleList, Loader, FormElement},
         props: {
             label: {default: '', type: String},
             name: {default: '', type: String},
@@ -40,10 +41,7 @@
         },
         data() {
             return {
-                isFileLoading: false,
-                listRowActions: [
-                    new Action('fas fa-trash-alt', this.onFileRemoved)
-                ]
+                isFileLoading: false
             }
         },
         methods: {
@@ -83,13 +81,21 @@
             },
             cListRowActions() {
                 let actions = [];
+
+                const getButtonDescriptor = (name, faIcon) => {
+                    return (new ButtonDescriptor(name)).setFaIcon(faIcon);
+                };
+
                 if (typeof this.onFileRemoved === 'function') {
-                    actions.push(new Action('fas fa-trash-alt', this.onFileRemoved));
+                    actions.push(new Action(getButtonDescriptor('fileRemove', 'fas fa-trash-alt'), this.onFileRemoved));
                 }
                 if (this.cIsDownloadEnabled) {
-                    actions.push(new Action('fas fa-file-download', this.downloadFile));
+                    actions.push(new Action(getButtonDescriptor('fileDownload', 'fas fa-file-download'), this.downloadFile));
                 }
                 return actions;
+            },
+            buttonAddDescriptor() {
+                return new ButtonDescriptor('add', 'Ajouter');
             }
         }
     }
@@ -111,8 +117,13 @@
             line-height: 2rem;
         }
 
-        .element_content {
+        > .element_content {
             margin-top: 5px;
+        }
+
+        .form_element_button2 .element_content {
+            display: flex;
+            justify-content: end;
         }
     }
 </style>

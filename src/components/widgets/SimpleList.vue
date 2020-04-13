@@ -63,6 +63,10 @@
         .form_element_button2 {
             font-size: .8rem;
             margin: 2px;
+
+            &:last-of-type {
+                margin-right: 0;
+            }
         }
     }
 
