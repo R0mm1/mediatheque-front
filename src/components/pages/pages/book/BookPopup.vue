@@ -10,7 +10,7 @@
         </template>
 
         <template v-slot:popup_body>
-            <MainTab v-if="currentTab === 'main'" :book-store="bookStore" v-on:book-type-changed="changeBookType"/>
+            <MainTab v-if="currentTab === 'main'" :book-store="bookStore"/>
             <SocialTab v-if="currentTab === 'social'"></SocialTab>
         </template>
 
@@ -99,27 +99,6 @@
                     throw "Invalid book type provided";
 
                 this.bookStore = this.bookType === BookService.bookPaper ? bookPaperModule : bookElectronicModule;
-            },
-            changeBookType(isElectronic) {
-                if (!bookPopupModule.hasOrigin) {
-                    bookPopupModule.setOrigin(this.bookStore.book);
-                }
-
-                const isOriginElectronic = (typeof bookPopupModule.origin.hasBookFile !== 'undefined');
-                this.bookTypeChanged = (isOriginElectronic && !isElectronic);
-
-                bookPopupModule.setBookSnapshot(JSON.parse(JSON.stringify(this.bookStore.book)));
-
-                const historyService = new HistoryService();
-                historyService.history = this.bookStore.historyService.history;
-
-                bookPopupModule.setHistoryService(historyService);
-
-                const bookStore = isElectronic ? bookElectronicModule : bookPaperModule;
-                bookStore.set(bookPopupModule.otherTypeFromSnapshot());
-                bookStore.setHistoryService(historyService);
-
-                this.bookStore = bookStore;
             }
         },
         computed: {

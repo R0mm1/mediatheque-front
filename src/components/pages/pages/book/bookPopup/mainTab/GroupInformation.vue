@@ -100,9 +100,6 @@
                         return Promise.resolve(users);
                     })
             },
-            setBookType(field, isElectronic) {
-                this.$parent.$parent.$emit('book-type-changed', isElectronic);
-            },
             downloadEbook() {
                 this.bookStore.downloadEbook();
             }
