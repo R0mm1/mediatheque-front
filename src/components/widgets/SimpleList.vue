@@ -64,6 +64,10 @@
             font-size: .8rem;
             margin: 2px;
 
+            &:nth-child(2){
+                margin-left: 10px;
+            }
+
             &:last-of-type {
                 margin-right: 0;
             }
@@ -72,5 +76,7 @@
 
     .row_content {
         flex: 1;
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
 </style>

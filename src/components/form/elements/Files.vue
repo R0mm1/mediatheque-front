@@ -123,7 +123,7 @@
 
         .form_element_button2 .element_content {
             display: flex;
-            justify-content: end;
+            justify-content: flex-end;
         }
     }
 </style>

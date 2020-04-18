@@ -1,12 +1,14 @@
 <template>
-    <Tab>
+    <Tab class="book_main_tab">
         <template v-slot:tab_content>
             <GroupPicture :book-store="bookStore" class="groupPicture"/>
-            <div class="bookPopupColumn">
-                <GroupSummary :book-store="bookStore" class="groupSummary"/>
-                <GroupReferences :book-store="bookStore"/>
-            </div>
-            <GroupInformation class="groupInformation" :book-store="bookStore"/>
+            <GroupSummary :book-store="bookStore" class="groupSummary"/>
+            <Column>
+                <template v-slot:column_content>
+                    <GroupInformation class="groupInformation" :book-store="bookStore"/>
+                    <GroupReferences :book-store="bookStore"/>
+                </template>
+            </Column>
         </template>
     </Tab>
 </template>
@@ -18,30 +20,38 @@
     import GroupReferences from "./mainTab/GroupReferences";
 
     import Tab from "../../../../popup/Tab";
+    import Column from "../../../../popup/Column";
 
     export default {
         name: "MainTab",
-        components: {Tab, GroupReferences, GroupSummary, GroupPicture, GroupInformation},
+        components: {Column, Tab, GroupReferences, GroupSummary, GroupPicture, GroupInformation},
         props: {bookStore: {type: Object, required: true}}
     }
 </script>
 
 <style scoped lang="scss">
     .groupPicture {
-        width: 10%;
-        min-width: 150px;
+        width: 160px;
     }
 
     .groupSummary {
-        height: 50%;
+        flex: 1;
     }
 
     .groupInformation {
-        min-width: 450px;
-        width: 50%;
+        max-width: 500px;
     }
+</style>
 
-    .bookPopupColumn {
-        flex: 1;
+<style lang="scss">
+    .book_main_tab .groupInformation {
+        .form_element label {
+            width: 50% !important;
+            max-width: 150px !important;
+        }
+
+        .form_element_files {
+            flex-direction: column;
+        }
     }
 </style>
