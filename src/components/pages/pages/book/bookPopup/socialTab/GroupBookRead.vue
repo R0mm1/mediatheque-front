@@ -19,58 +19,60 @@
     import Group from "../../../../../popup/Group";
     import Loader from "../../../../../widgets/Loader";
 
-    import store from "../../../../../../assets/js/store";
-    import BookNotationModule from "../../../../../../assets/js/store/bookNotation";
-    import BookModule from "../../../../../../assets/js/store/book";
-
-    if (!store.state['bookNotation']) {
-        store.registerModule('bookNotation', BookNotationModule);
-    }
-
-    if (!store.state['book']) {
-        store.registerModule('book', BookModule);
-    }
+    const config = require('../../../../../../../mediatheque');
 
     export default {
         name: "GroupBookRead",
         components: {Loader, Group, VueStars},
+        props: {bookStore: {type: Object, required: true}},
         data() {
             return {
-                isNotationLoading: true
+                isNotationLoading: true,
+                note: 0
             };
         },
         computed: {
             cNote: {
                 get() {
-                    return this.$store.getters['bookNotation/getProperty']('note');
+                    return this.note;
                 },
                 set(value) {
-                    this.$store.commit('bookNotation/setProperty', {
-                        property: 'note',
-                        value: value
-                    });
-                    this.$store.dispatch('bookNotation/save');
+                    this.isNotationLoading = true;
+                    this.bookStore.updateNote(value)
+                        .then(bookNotation => {
+                            this.note = bookNotation.note;
+                            this.isNotationLoading = false;
+                        })
+                        .catch(error => {
+                            this.$toasted.show("Une erreur est survenue lors de l'enregistrement de la note", {
+                                ...config.default.notification_settings,
+                                type: 'error',
+                                icon: 'fa-times',
+                            });
+                            console.error(error);
+                            this.isNotationLoading = false;
+                        })
                 }
             }
         },
         created() {
-            const bookId = this.$store.getters['book/getProperty']('id');
-            this.$store.dispatch('bookNotation/findByBook', bookId)
-                .then(() => {
-                    const bookNotationId = this.$store.getters['bookNotation/getProperty']('id');
-                    if (bookNotationId === null) {
-                        this.$store.commit('bookNotation/create', {
-                            bookId: bookId,
-                            note: 0
-                        });
+            this.bookStore.getNotation()
+                .then(notation => {
+                    if (notation !== null) {
+                        this.note = notation.note;
                     }
                     this.isNotationLoading = false;
                 })
-                .catch(response => {
-                    console.error(response);
+                .catch(error => {
+                    this.$toasted.show('Une erreur est survenue lors du chargement de la note', {
+                        ...config.default.notification_settings,
+                        type: 'error',
+                        icon: 'fa-times',
+                    });
+                    console.error(error);
+                    this.isNotationLoading = false;
                 });
-        },
-        store
+        }
     }
 </script>
 

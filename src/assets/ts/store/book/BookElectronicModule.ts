@@ -111,6 +111,7 @@ class BookElectronicModule extends BookModule implements EntityModuleInterface<B
     }
 
     @Mutation init(): void {
+        super.init();
         this.flagService.reset();
         this.historyService.init();
         this.book = new Proxy(this.bookService.getBaseElectronicBook(), this.proxy);

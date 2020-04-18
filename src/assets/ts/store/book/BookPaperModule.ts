@@ -25,6 +25,7 @@ class BookPaperModule extends BookModule implements EntityModuleInterface<BookPa
     }
 
     @Mutation init(): void {
+        super.init();
         this.flagService.reset();
         this.historyService.init();
         this.book = new Proxy(this.bookService.getBasePaperBook(), this.proxy);

@@ -11,7 +11,7 @@
 
         <template v-slot:popup_body>
             <MainTab v-if="currentTab === 'main'" :book-store="bookStore"/>
-            <SocialTab v-if="currentTab === 'social'"></SocialTab>
+            <SocialTab v-if="currentTab === 'social'" :book-store="bookStore"></SocialTab>
         </template>
 
         <template v-slot:popup_footer>

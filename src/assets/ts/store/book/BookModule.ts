@@ -4,7 +4,8 @@ import {
     AuthorEntity,
     BookEntity, FileEntity,
     GroupEntity,
-    UserEntity
+    UserEntity,
+    BookNotationEntity
 } from "@/assets/ts/entity/module";
 import BookService from "@/assets/ts/service/BookService";
 import FlagService from "@/assets/ts/service/FlagService";
@@ -31,6 +32,9 @@ export abstract class BookModule extends VuexModule {
 
     tempNewCover: File | null = null; //Can't use undefined instead of null otherwise the attribute won't appear on the state
 
+    //The notation given to the book by the user
+    notation: BookNotationEntity | null = null;
+
     flagService: FlagService<EntityModuleFlagInterface> = new FlagService({
         isModified: false,
         readyToSave: true
@@ -42,7 +46,9 @@ export abstract class BookModule extends VuexModule {
         return this.requestService.execute(request);
     }
 
-    abstract init(): void;
+    @Mutation init(): void {
+        this.notation = null;
+    }
 
     @Mutation setHistoryService(historyService: HistoryService) {
         this.historyService = historyService;
@@ -119,6 +125,10 @@ export abstract class BookModule extends VuexModule {
         this.tempNewCover = cover;
     }
 
+    @Mutation setNotation(notation: BookNotationEntity | null) {
+        this.notation = notation;
+    }
+
     @Action({rawError: true})
     async linkNewCover(file: { file: File, name: string }) {
         this.context.commit('setTempNewCover', file.file);
@@ -134,6 +144,57 @@ export abstract class BookModule extends VuexModule {
             .catch((response: any) => {
                 this.flagService.flags.readyToSave = true;
                 return Promise.reject(response);
+            });
+    }
+
+    @Action({rawError: true})
+    getNotation() {
+        if (this.notation !== null) {
+            return Promise.resolve(this.notation);
+        }
+
+        if (typeof this.book.id === 'undefined') {
+            return;
+        }
+
+        const request = this.requestService.createRequest('/book_notations')
+            .setQueryParams({
+                'book.id': this.book.id
+            });
+
+        return this.requestService.execute(request)
+            .then(response => {
+                if (response['hydra:member'].length > 0) {
+                    this.context.commit('setNotation', response['hydra:member'].pop());
+                } else {
+                    this.context.commit('setNotation', null);
+                }
+                return Promise.resolve(this.notation);
+            });
+    }
+
+    @Action({rawError: true})
+    updateNote(note: Number) {
+        const requestBody: BookNotationEntity = {};
+        let url = '/book_notations';
+        let method = 'POST';
+
+        if (this.notation === null) {
+            requestBody.book = this.book['@id'];
+            requestBody.note = note;
+        } else {
+            requestBody.note = note;
+            method = 'PUT';
+            url += '/' + this.notation.id;
+        }
+
+        const request = this.requestService.createRequest(url, method)
+            .setBody(requestBody)
+            .addHeader('Content-Type', 'application/json');
+        return this.requestService.execute(request)
+            .then(response => {
+                this.context.commit('setNotation', response);
+                return Promise.resolve(response);
             });
     }
 }

@@ -1,7 +1,7 @@
 <template>
     <Tab>
         <template v-slot:tab_content>
-            <GroupBookRead></GroupBookRead>
+            <GroupBookRead :book-store="bookStore"></GroupBookRead>
         </template>
     </Tab>
 </template>
@@ -12,7 +12,8 @@
 
     export default {
         name: "SocialTab",
-        components: {GroupBookRead, Tab}
+        components: {GroupBookRead, Tab},
+        props: {bookStore: {type: Object, required: true}}
     }
 </script>
 
