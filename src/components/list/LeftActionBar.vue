@@ -48,6 +48,14 @@
 </script>
 
 <style scoped lang="scss">
+    @import "../../assets/scss/breakpoints";
+
+    @include phone-portrait {
+        #leftActionBar {
+            display: none;
+        }
+    }
+
     #labColorBar {
         height: 100%;
         width: 30px;

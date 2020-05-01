@@ -41,8 +41,6 @@
 <style lang="scss">
     #groupBookSummary {
         #wysiwygSummary {
-            height: 100%;
-
             .ck.ck-editor {
                 height: 100%;
                 display: flex;

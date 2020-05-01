@@ -1,12 +1,12 @@
 <template>
-    <FormElement :name="name" :container-custom-classes="'form_element_picture'">
+    <FormElement :name="name" container-custom-classes="form_element_picture">
 
         <template v-slot:element_label><span></span></template>
 
         <template v-slot:element_content>
             <div class="picture_preview" v-on:click="displayFileChooser"
                  :style="'background-image: url('+pictureSrc+')'">
-                <Loader class="loader" v-if="isPictureLoading" :type="'s'"></Loader>
+                <Loader class="loader" v-if="isPictureLoading" type="s"></Loader>
                 <div class="preview_default" v-if="!hasPictureLoaded && !isPictureLoading">
                     <i class="far fa-image"></i>
                 </div>
@@ -112,6 +112,7 @@
 
 <style scoped lang="scss">
     @import "../../../assets/scss/colors";
+    @import "../../../assets/scss/breakpoints";
 
     input[type="file"] {
         display: none;
@@ -144,13 +145,43 @@
         justify-content: center;
         border-top: 1px solid $shade2;
         padding-top: 7px;
+        margin-top: 10px;
+
+        @include phone-portrait {
+            border-top: none;
+            padding-top: 0;
+            flex-direction: column;
+            margin-right: 25px;
+            margin-top: 0;
+        }
 
         .form_element_button {
             width: 15px;
-            margin: 0px 3px;
+            margin: 0 3px;
             height: 15px;
             text-align: center;
             border-radius: 5px;
+
+            @include phone-portrait {
+                margin: 3px 0;
+            }
+        }
+    }
+</style>
+
+<style lang="scss">
+    @import "../../../assets/scss/breakpoints";
+
+    @include phone-portrait {
+        .form_element_picture {
+            > .element_content {
+                display: flex;
+                flex-direction: row;
+            }
+
+            > .element_label {
+                display: none;
+            }
         }
     }
 </style>

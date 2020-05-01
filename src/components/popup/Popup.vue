@@ -28,6 +28,8 @@
 </script>
 
 <style scoped lang="scss">
+    @import "../../assets/scss/breakpoints";
+
     .med_popup {
         display: flex;
         flex-direction: column;
@@ -38,11 +40,22 @@
         margin: 10px;
         box-shadow: 1px 1px 5px black;
         background-color: #f8f5ef;
+
+        @include phone-portrait{
+            margin: 0;
+            box-shadow: none;
+            width: 100%;
+            height: 100%;
+        }
     }
 
     .popup_header {
         height: 4rem;
         display: flex;
+
+        @include phone-portrait{
+            height: 2rem;
+        }
     }
 
     .popup_body {

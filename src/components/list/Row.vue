@@ -99,6 +99,15 @@
 </script>
 
 <style scoped lang="scss">
+    @import "../../assets/scss/colors";
+    @import "../../assets/scss/breakpoints";
+
+    @include phone-portrait {
+        .cell {
+            width: 100vw;
+        }
+    }
+
     .listRow {
         height: calc(1.5rem - 2px);
         transition: all 0.3s;

@@ -26,7 +26,8 @@
             disabled: {default: false},
             name: {default: ''},
             customClasses: {default: ''},
-            noLabel: {default: false, type: Boolean}
+            noLabel: {default: false, type: Boolean},
+            labelBreakpoint: {default: false, type: Boolean}
         },
         data() {
             return {
@@ -40,13 +41,16 @@
             getValue() {
                 return this.elValue;
             },
-            emitEvent(name, elValue){
+            emitEvent(name, elValue) {
 
             }
         },
         computed: {
             cCustomClasses() {
-                let classes = ['form_element_text', this.customClasses];
+                const classes = ['form_element_text', this.customClasses];
+                if (this.labelBreakpoint) {
+                    classes.push('label_breakpoint');
+                }
                 return classes;
             }
         },
@@ -62,16 +66,31 @@
 </script>
 
 <style lang="scss">
+    @import "../../../assets/scss/breakpoints";
+    @import "../../../assets/scss/colors";
+
     .form_element_text {
-        height: 2rem;
-        line-height: 2rem;
+        label, input {
+            height: 2rem;
+            line-height: 2rem;
+        }
 
         input {
             width: calc(100% - 6px);
             height: calc(100% - 6px);
-            border: 1px solid #f8f3ea;
+            border: 1px solid $shade3;
             padding: 2px;
             background-color: white;
+        }
+
+        @include phone-portrait {
+            &.label_breakpoint {
+                flex-direction: column;
+
+                label {
+                    width: initial;
+                }
+            }
         }
     }
 </style>

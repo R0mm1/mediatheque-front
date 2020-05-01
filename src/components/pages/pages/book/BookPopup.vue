@@ -142,6 +142,8 @@
 </script>
 
 <style lang="scss">
+    @import "../../../../assets/scss/breakpoints";
+
     #bookPopup {
         .input_title {
             flex: 1;
@@ -155,6 +157,10 @@
 
             input {
                 font-size: 2.5rem;
+
+                @include phone-portrait{
+                    font-size: 1rem;
+                }
             }
         }
     }

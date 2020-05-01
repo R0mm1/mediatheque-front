@@ -144,6 +144,7 @@
 
 <style scoped lang="scss">
     @import "../../assets/scss/colors";
+    @import "../../assets/scss/breakpoints";
 
     $leftActionBarWidth: 30px;
 
@@ -158,6 +159,10 @@
         margin-left: $leftActionBarWidth;
         display: flex;
         flex-direction: column;
+
+        @include phone-portrait{
+            margin-left: 0;
+        }
 
         #vueList {
             display: block;
@@ -186,14 +191,23 @@
                 display: block;
                 height: calc(100% - 34px);
                 overflow: auto;
+
+                @include phone-portrait{
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                }
             }
 
             td.cell {
                 padding: 5px 3px 5px 5px;
             }
 
-            tr:not(.listListHeader):nth-child(2n) {
+            tr:not(.listListHeader):nth-child(even) {
                 background-color: #fcfcfa;
+
+                @include phone-portrait{
+                    background-color: $shade3;
+                }
             }
 
             .list-loader {

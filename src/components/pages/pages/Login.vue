@@ -9,8 +9,8 @@
                 </template>
 
                 <template v-slot:form_body>
-                    <InputText v-model="userLogin" label="Identifiant"></InputText>
-                    <InputPassword v-model="userPassword" label="Mot de passe"></InputPassword>
+                    <InputText v-model="userLogin" label="Identifiant" :label-breakpoint="true"></InputText>
+                    <InputPassword v-model="userPassword" label="Mot de passe" :label-breakpoint="true"></InputPassword>
                 </template>
 
                 <template v-slot:action_cancel>
@@ -68,10 +68,16 @@
 </script>
 
 <style scoped lang="scss">
+    @import "../../../assets/scss/breakpoints";
+
     .med_form {
         width: 500px;
         margin: 100px auto;
         box-shadow: 1px 1px 5px #e4dccc;
         padding: 10px;
+
+        @include phone-portrait {
+            width: calc(100vw - 20px);
+        }
     }
 </style>

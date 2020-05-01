@@ -96,6 +96,7 @@
 
 <style lang="scss">
     @import "../../assets/scss/colors";
+    @import "../../assets/scss/breakpoints";
 
     .listListHeader {
         background-color: $shade1;
@@ -104,6 +105,10 @@
         .cell {
             height: 2rem;
             position: relative;
+
+            @include phone-portrait{
+                width: 100vw;
+            }
         }
 
         .headerRow {

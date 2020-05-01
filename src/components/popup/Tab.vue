@@ -11,10 +11,16 @@
 </script>
 
 <style scoped lang="scss">
+    @import "../../assets/scss/breakpoints";
+
     #med_popup_tab {
         width: 100%;
         display: flex;
         overflow: auto;
         flex: 1;
+
+        @include phone-portrait{
+            flex-direction: column;
+        }
     }
 </style>

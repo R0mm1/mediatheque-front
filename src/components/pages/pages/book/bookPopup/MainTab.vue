@@ -30,8 +30,14 @@
 </script>
 
 <style scoped lang="scss">
+    @import "../../../../../assets/scss/breakpoints";
+
     .groupPicture {
         width: 160px;
+
+        @include phone-portrait {
+            width: initial;
+        }
     }
 
     .groupSummary {
@@ -45,7 +51,7 @@
 
 <style lang="scss">
     .book_main_tab .groupInformation {
-        .form_element label {
+        .group_content > .form_element > label {
             width: 50% !important;
             max-width: 150px !important;
         }

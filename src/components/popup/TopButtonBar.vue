@@ -29,7 +29,7 @@
         },
         methods: {
             setTab(topButtonBarElement) {
-                if(topButtonBarElement.isActive){
+                if (topButtonBarElement.isActive) {
                     this.selectedTabName = topButtonBarElement.tabName;
                     this.$emit('tab-button-clicked', topButtonBarElement.tabName);
                 }
@@ -57,6 +57,7 @@
 
 <style lang="scss">
     @import "../../assets/scss/colors";
+    @import "../../assets/scss/breakpoints";
 
     #med_popup_topbuttonbar {
         display: flex;
@@ -68,6 +69,10 @@
             flex-direction: column;
             text-align: center;
             justify-content: center;
+
+            @include phone-portrait {
+                width: 1rem;
+            }
 
             &.selected:after {
                 content: ' ';
@@ -82,6 +87,10 @@
 
             label {
                 font-size: 2rem;
+
+                @include phone-portrait {
+                    font-size: 1rem;
+                }
             }
         }
     }

@@ -27,6 +27,7 @@
 
 <style scoped lang="scss">
     @import "../../assets/scss/colors";
+    @import "../../assets/scss/breakpoints";
 
     #vueHeader {
         position: relative;
@@ -36,6 +37,10 @@
         height: 100px;
         z-index: 10;
 
+        @include phone-portrait{
+            height: 50px;
+        }
+
         #mainLogo {
             display: inline-block;
             background-color: $shade3;
@@ -43,6 +48,10 @@
             img {
                 height: 80px;
                 margin: 10px;
+
+                @include phone-portrait{
+                    height: 30px;
+                }
             }
         }
 
@@ -50,6 +59,10 @@
             margin: auto;
             color: #fff;
             font-size: 3rem;
+
+            @include phone-portrait{
+                font-size: 2rem;
+            }
         }
 
         #mainMenu {
