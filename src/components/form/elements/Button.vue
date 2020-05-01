@@ -46,12 +46,15 @@
 
             const height = this.buttonDescriptor.isIconButton ? this.buttonDescriptor.iconButtonDimension : this.buttonDescriptor.buttonHeight;
             const width = this.buttonDescriptor.isIconButton ? this.buttonDescriptor.iconButtonDimension : this.buttonDescriptor.buttonWidth;
+            const unit = this.buttonDescriptor.isIconButton ?
+                (typeof this.buttonDescriptor.iconButtonDimensionUnit !== 'string' ? '' : this.buttonDescriptor.iconButtonDimensionUnit) :
+                'px';
 
             if (typeof height !== 'undefined') {
-                style.height = height + 'px';
+                style.height = height + unit;
             }
             if (typeof width !== 'undefined') {
-                style.width = width + 'px';
+                style.width = width + unit;
             }
 
             return style;
@@ -61,7 +64,8 @@
             const style: any = {};
 
             if (this.buttonDescriptor.isIconButton) {
-                style.width = this.buttonDescriptor.iconButtonDimension + 'px';
+                style.width = this.buttonDescriptor.iconButtonDimension +
+                    (typeof this.buttonDescriptor.iconButtonDimensionUnit !== 'string' ? 'px' : this.buttonDescriptor.iconButtonDimensionUnit);
             }
 
             return style;

@@ -18,6 +18,7 @@ export default class ButtonDescriptor extends AbstractDescriptor {
 
     isIconButton: Boolean = false;
     iconButtonDimension: Number = 24;
+    iconButtonDimensionUnit: String | null = 'px';
 
     buttonWidth?: Number;
     buttonHeight?: Number;
@@ -50,10 +51,13 @@ export default class ButtonDescriptor extends AbstractDescriptor {
         return this;
     }
 
-    setIsIconButon(isIconButton: boolean, iconButtonDimension?: Number) {
+    setIsIconButon(isIconButton: boolean, iconButtonDimension?: Number, iconButtonDimensionUnit?: String | null) {
         this.isIconButton = isIconButton;
         if (typeof iconButtonDimension !== 'undefined') {
             this.iconButtonDimension = iconButtonDimension;
+        }
+        if (typeof iconButtonDimensionUnit !== 'undefined') {
+            this.iconButtonDimensionUnit = iconButtonDimensionUnit;
         }
         return this;
     }
